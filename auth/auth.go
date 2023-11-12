@@ -13,12 +13,23 @@ import "github.com/golang-jwt/jwt/v5"
 const key = "ReplaceThisBeforeProduction!!!!"
 
 func HasPermission(request *http.Request, perm typedef.Permission) bool {
+	if perm == typedef.PublicPerm {
+		return true
+	}
+	subjectI := GetUserId(request)
+	if subjectI == 0 {
+		return false
+	}
 	if perm == typedef.UnprotectedPerm {
 		return true
 	}
+	return (db.GetPermissions(subjectI) & (1 << perm)) != 0
+}
+
+func GetUserId(request *http.Request) int64 {
 	cook, err := request.Cookie("iisauth")
 	if err != nil {
-		return false
+		return 0
 	}
 	token, err := jwt.Parse(cook.Value, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -27,17 +38,17 @@ func HasPermission(request *http.Request, perm typedef.Permission) bool {
 		return []byte(key), nil
 	})
 	if err != nil {
-		return false
+		return 0
 	}
 	subject, err := token.Claims.GetSubject()
 	if err != nil {
-		return false
+		return 0
 	}
 	subjectI, err := strconv.ParseInt(subject, 10, 64)
 	if err != nil {
-		return false
+		return 0
 	}
-	return (db.GetPermissions(subjectI) & (1 << perm)) != 0
+	return subjectI
 }
 
 // Authenticate will return a valid JWT token in expected format when provided login information is correct, presentable error otherwise

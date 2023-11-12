@@ -41,6 +41,15 @@ func GetUserIdPasswordHash(username string) (int64, string, error) {
 	return id, hash, nil
 }
 
+func GetUsername(id int64) (string, error) {
+	var username string
+	err := db.QueryRow(`SELECT username from users where id = ?`, id).Scan(&username)
+	if err != nil {
+		return "", fmt.Errorf("no such user found") //TODO funkce DoesUserExist
+	}
+	return username, nil
+}
+
 // With id < 0, create a new user. Returns id of user
 func CreateOrUpdateUser(id int, username string, passHash string, permission ...typedef.Permission) (int64, error) {
 	permInt := 0

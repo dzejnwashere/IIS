@@ -14,11 +14,12 @@ import _ "github.com/go-sql-driver/mysql"
 func login(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	if err != nil || len(request.Form) == 0 {
-		fmt.Fprintf(writer, "Accessing without form data.")
+		static_site("login", typedef.PublicPerm)(writer, request)
 		return
 	}
 	jwtToken, err := auth.Authenticate(request.PostFormValue("username"), request.PostFormValue("password"))
 	if err != nil {
+		writer.WriteHeader(401)
 		fmt.Fprintf(writer, err.Error())
 		return
 	}
@@ -28,6 +29,40 @@ func login(writer http.ResponseWriter, request *http.Request) {
 		MaxAge: 600,
 	}
 	http.SetCookie(writer, &cookie)
+	http.Redirect(writer, request, "/", 302)
+}
+
+func logout(writer http.ResponseWriter, request *http.Request) {
+	cookie := http.Cookie{
+		Name:   "iisauth",
+		Value:  "",
+		MaxAge: 0,
+	}
+	http.SetCookie(writer, &cookie)
+	http.Redirect(writer, request, "/", 302)
+}
+
+type IndexPageData struct {
+	LoggedIn bool
+	Admin    bool
+	Username string
+}
+
+func index(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/index.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+	username, _ := db.GetUsername(auth.GetUserId(request))
+	data := IndexPageData{
+		LoggedIn: auth.HasPermission(request, typedef.UnprotectedPerm),
+		Admin:    auth.HasPermission(request, typedef.AdminPerm),
+		Username: username,
+	}
+	err = files.Execute(writer, data)
+	if err != nil {
+		return
+	}
 }
 
 // Creates a function for serving a static file. Accepts required permission for displaying the site, -1 bypasses the check
@@ -50,9 +85,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", static_site("login", typedef.UnprotectedPerm))
+	r.HandleFunc("/", index)
 	r.HandleFunc("/admin", static_site("admin", typedef.AdminPerm))
 	r.HandleFunc("/login", login)
+	r.HandleFunc("/logout", logout)
 
 	db.InitDB()
 

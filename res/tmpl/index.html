@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  {{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
+  {{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
+  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}}
+</body>
+</html>

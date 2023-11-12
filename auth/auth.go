@@ -2,6 +2,7 @@ package auth
 
 import (
 	"IIS/db"
+	"IIS/typedef"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -9,17 +10,10 @@ import (
 )
 import "github.com/golang-jwt/jwt/v5"
 
-type Permission int
-
-const (
-	AdminPerm       Permission = 0
-	UnprotectedPerm            = -1
-)
-
 const key = "ReplaceThisBeforeProduction!!!!"
 
-func HasPermission(request *http.Request, perm Permission) bool {
-	if perm == UnprotectedPerm {
+func HasPermission(request *http.Request, perm typedef.Permission) bool {
+	if perm == typedef.UnprotectedPerm {
 		return true
 	}
 	cook, err := request.Cookie("iisauth")
@@ -56,7 +50,7 @@ func Authenticate(username string, password string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("invalid password")
 	}
-	signedString, err := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{"sub": id}).SignedString(key)
+	signedString, err := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{"sub": strconv.Itoa(int(id))}).SignedString([]byte(key))
 	if err != nil {
 		return "", err
 	}

@@ -8,5 +8,9 @@
   {{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
   {{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
   {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}}
+  <form>
+
+  </form>
+  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}}
 </body>
 </html>

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"os"
 	"time"
 )
 
@@ -69,8 +70,8 @@ func CreateOrUpdateUser(id int, username string, passHash string, permission ...
 
 func InitDB() {
 	var err error
-	//db, err = sql.Open("mysql", os.Getenv("DBUSER")+":"+os.Getenv("DBPASS")+"@unix("+os.Getenv("DBADDR")+")/"+os.Getenv("DBDB"))
-	db, err = sql.Open("mysql", "root:#Warthunder113@tcp(localhost:3306)/testdb")
+	db, err = sql.Open("mysql", os.Getenv("DBUSER")+":"+os.Getenv("DBPASS")+"@unix("+os.Getenv("DBADDR")+")/"+os.Getenv("DBDB"))
+	//db, err = sql.Open("mysql", "root:#Warthunder113@tcp(localhost:3306)/testdb")
 	if err != nil {
 		log.Fatal(err)
 	}

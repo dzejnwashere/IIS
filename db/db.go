@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
-	"os"
 	"time"
 )
 
@@ -68,10 +67,104 @@ func CreateOrUpdateUser(id int, username string, passHash string, permission ...
 	}
 }
 
+func RemoveUser(userID int) {
+	query := `SELECT permissions FROM users WHERE id = ?;`
+	row, _ := db.Query(query, userID)
+
+	defer func(perms *sql.Rows) {
+		err := perms.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(row)
+	var permissions int
+
+	for row.Next() {
+		err := row.Scan(&permissions)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	err := row.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(permissions)
+
+	if permissions == 2 {
+		query = `DELETE FROM ridici WHERE user = ?;`
+		_, err = db.Exec(query, userID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else if permissions == 4 {
+		fmt.Println("TUTUTUTU")
+		query = `DELETE FROM dispeceri WHERE user = ?;`
+		_, err = db.Exec(query, userID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else if permissions == 8 {
+		query = `DELETE FROM technici WHERE user = ?;`
+		_, err = db.Exec(query, userID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else if permissions == 16 {
+		query = `DELETE FROM spravci WHERE user = ?;`
+		_, err = db.Exec(query, userID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
+	query = `DELETE FROM users WHERE id = ?;`
+	_, err = db.Exec(query, userID)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
+type User struct {
+	ID          int
+	Username    string
+	Permissions int
+}
+
+func GetAllUsers() []User {
+	query := `SELECT id, username, permissions FROM users;`
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	var users []User
+	var id int
+	var username string
+	var permissions int
+
+	for rows.Next() {
+		err := rows.Scan(&id, &username, &permissions)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(id, username, permissions)
+		users = append(users, User{ID: id, Username: username, Permissions: permissions})
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return users
+}
+
 func InitDB() {
 	var err error
-	db, err = sql.Open("mysql", os.Getenv("DBUSER")+":"+os.Getenv("DBPASS")+"@unix("+os.Getenv("DBADDR")+")/"+os.Getenv("DBDB"))
-	//db, err = sql.Open("mysql", "root:#Warthunder113@tcp(localhost:3306)/testdb")
+	//db, err = sql.Open("mysql", os.Getenv("DBUSER")+":"+os.Getenv("DBPASS")+"@unix("+os.Getenv("DBADDR")+")/"+os.Getenv("DBDB"))
+	db, err = sql.Open("mysql", "root:#Warthunder113@tcp(localhost:3306)/testdb")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,7 +210,7 @@ func InitDB() {
     			jmeno VARCHAR(20),
     			prijmeni VARCHAR(30),
     			user INT,
-    			FOREIGN KEY (user) REFERENCES users(id)) comment="6";`
+    			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6";`
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -137,7 +230,7 @@ func InitDB() {
     			jmeno VARCHAR(20),
     			prijmeni VARCHAR(30),
     			user INT,
-    			FOREIGN KEY (user) REFERENCES users(id)) comment="6";`
+    			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6";`
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -157,7 +250,7 @@ func InitDB() {
     			jmeno VARCHAR(20),
     			prijmeni VARCHAR(30),
     			user INT,
-    			FOREIGN KEY (user) REFERENCES users(id)) comment="6";`
+    			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6";`
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -301,8 +394,8 @@ func InitDB() {
 			    stav INT,
 			    technik INT,
 			    FOREIGN KEY (spz) REFERENCES vozy(spz),
-			    FOREIGN KEY (autor) REFERENCES spravci(id),
-			    FOREIGN KEY (technik) REFERENCES technici(id)) comment="6";`
+			    FOREIGN KEY (autor) REFERENCES spravci(id) ON DELETE SET NULL,
+			    FOREIGN KEY (technik) REFERENCES technici(id) ON DELETE SET NULL) comment="6";`
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -324,7 +417,7 @@ func InitDB() {
 			    zavada INT,
 			    PRIMARY KEY (spz_vozidla, datum),
 			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
-			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6";`
+			    FOREIGN KEY (zavada) REFERENCES zavady(id) ON DELETE SET NULL) comment="6";`
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())

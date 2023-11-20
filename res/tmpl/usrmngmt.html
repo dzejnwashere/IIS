@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #D22B2B;
+            color: white;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function deleteUser(userID) {
+            // Add logic to handle delete action for the user with the specified ID
+            if(userID === 1){
+                alert("You can´t delete admin.");
+            }else{
+                alert("Delete user with ID: " + userID);
+
+                $.ajax({
+                    method: "GET",
+                    url: "/remove",
+                    data: { userID: userID },
+                    success: function(userId) {
+                        alert("User with ID " + userID + " removed successfully!");
+                        $('#table-management').html(userId);
+                    },
+                    error: function() {
+                        alert("An error occurred while removing the user.");
+                    }
+                });
+            }
+        }
+
+        function deactivateUser(userID) {
+            // Add logic to handle deactivate action for the user with the specified ID
+            alert("Deactivate user with ID: " + userID);
+        }
+
+        function editUser(userID) {
+            // Add logic to handle edit action for the user with the specified ID
+            alert("Edit user with ID: " + userID);
+        }
+    </script>
+</head>
+<body>
+<h2>User management 🚎</h2>
+<table id="table-management">
+    <tr>
+        <th>ID</th>
+        <th>User name</th>
+        <th>Permissions</th>
+        <th>Delete</th>
+        <th>Deactivate</th>
+        <th>Edit</th>
+    </tr>
+    {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Username}}</td>
+            <td>{{.Permissions}}</td>
+            <td><button class="delete-btn" onclick="deleteUser({{.ID}})">❌</button></td>
+            <td><button class="deactivate-btn" onclick="deactivateUser({{.ID}})">🚫</button></td>
+            <td><button class="edit-btn" onclick="editUser({{.ID}})">✏️</button></td>
+        </tr>
+    {{end}}
+</table>
+</body>
+</html>

@@ -109,12 +109,29 @@ func static_site(template_name string, perm typedef.Permission) func(writer http
 	}
 }
 
+func demo(writer http.ResponseWriter, request *http.Request) {
+	if !auth.HasPermission(request, typedef.AdminPerm) {
+		writer.WriteHeader(403)
+		fmt.Fprint(writer, "403 insufficient permissions")
+		return
+	}
+	err := db.FeedDemoData()
+	if err != nil {
+		writer.WriteHeader(403)
+		fmt.Fprint(writer, err.Error())
+		return
+	}
+	writer.WriteHeader(200)
+	fmt.Fprint(writer, "Succesfully inserted demo data")
+}
+
 func main() {
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", index)
 	r.HandleFunc("/admin", static_site("admin", typedef.AdminPerm))
+	r.HandleFunc("/demo", demo)
 	r.HandleFunc("/login", login)
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)

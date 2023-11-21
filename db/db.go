@@ -18,7 +18,6 @@ func getTableVersion(tableName string) int64 {
 
 	err := res.Scan(&ver)
 	if err != nil {
-		log.Print(err.Error())
 		ver = 0
 	}
 	return ver
@@ -165,9 +164,18 @@ func GetAllUsers() []User {
 	return users
 }
 
+func FeedDemoData() error {
+	file, err := os.ReadFile("res/db/demo.sql")
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(string(file))
+	return err
+}
+
 func InitDB() {
 	var err error
-	db, err = sql.Open("mysql", os.Getenv("DBSTRING"))
+	db, err = sql.Open("mysql", os.Getenv("DBSTRING")+"?charset=utf8mb4&multiStatements=true")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -284,7 +292,6 @@ func InitDB() {
 			log.Fatal(err.Error())
 		}
 	}
-	//create_users()
 
 	if getTableVersion("zastavky") < 6 {
 		query := `drop table if exists zastavky;`
@@ -301,8 +308,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-
-		feed_zastavky()
 	}
 
 	if getTableVersion("linky") < 6 {
@@ -320,7 +325,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_linky()
 	}
 
 	if getTableVersion("linka_zastavka") < 6 {
@@ -344,7 +348,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_linka_zastavka()
 	}
 
 	if getTableVersion("vozy") < 6 {
@@ -364,7 +367,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_vozy()
 	}
 
 	if getTableVersion("stav_zavady") < 6 {
@@ -383,7 +385,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_stav_zavady()
 	}
 
 	if getTableVersion("zavady") < 6 {
@@ -408,7 +409,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_zavady()
 	}
 
 	if getTableVersion("tech_zaznamy") < 6 {
@@ -430,7 +430,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_tech_zaznamy()
 	}
 
 	if getTableVersion("dny_jizdy") < 6 {
@@ -449,7 +448,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_dny_jizdy()
 	}
 
 	if getTableVersion("spoje") < 6 {
@@ -475,7 +473,6 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		feed_spoje()
 	}
 
 }

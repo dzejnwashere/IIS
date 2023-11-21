@@ -96,10 +96,10 @@ INSERT INTO stav_zavady (stav) VALUES
                                    ('Pozastaveno');
 
 INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
-                                                          ('MA018DE', 1, 1, 'defekt', 1),
-                                                          ('MA807PQ', 1, 1, 'porouchané přední dveře – nedovírají', 3),
-                                                          ('MA103QQ', 1, 1, 'nesvítí levé přední světlo', 2),
-                                                          ('MA103QQ', 1, 1, 'prasklé čelní sklo', 2);
+                                                          ('MA018DE', 2, 3, 'defekt', 1),
+                                                          ('MA807PQ', 2, 3, 'porouchané přední dveře – nedovírají', 3),
+                                                          ('MA103QQ', 2, 3, 'nesvítí levé přední světlo', 2),
+                                                          ('MA103QQ', 2, 3, 'prasklé čelní sklo', 2);
 
 INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada) VALUES
                                                           ('MA018DE', '2023-11-18', NULL),

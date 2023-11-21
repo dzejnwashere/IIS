@@ -4,6 +4,7 @@ import (
 	"IIS/typedef"
 	"database/sql"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"os"
 	"time"
@@ -13,8 +14,11 @@ var db *sql.DB
 
 func getTableVersion(tableName string) int64 {
 	var ver int64
-	_, err := db.Query(`SELECT table_comment FROM INFORMATION_SCHEMA.TABLES where table_name like "?"`, tableName) //.Scan(&ver)
+	res := db.QueryRow(`SELECT table_comment FROM INFORMATION_SCHEMA.TABLES where table_name like ?`, tableName)
+
+	err := res.Scan(&ver)
 	if err != nil {
+		log.Print(err.Error())
 		ver = 0
 	}
 	return ver
@@ -178,14 +182,15 @@ func InitDB() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	/*
-	   	if getTableVersion("users") < 6 {
-	   		query := `drop table if exists users;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		query = `
+
+	if getTableVersion("users") < 6 {
+		fmt.Printf("%d", getTableVersion("users"))
+		query := `drop table if exists users;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		query = `
 	   			CREATE TABLE users (
 	   				id INT NOT NULL AUTO_INCREMENT,
 	   				username VARCHAR(20) NOT NULL,
@@ -193,140 +198,139 @@ func InitDB() {
 	   				permissions int not null,
 	   				UNIQUE (username),
 	   				PRIMARY KEY (id)) comment="6" character set utf8mb4; `
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		passHash, _ := bcrypt.GenerateFromPassword([]byte("admin"), 10)
-	   		CreateOrUpdateUser(-1, "admin", string(passHash), typedef.AdminPerm)
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		passHash, _ := bcrypt.GenerateFromPassword([]byte("admin"), 10)
+		CreateOrUpdateUser(-1, "admin", string(passHash), typedef.AdminPerm)
+	}
+	if getTableVersion("spravci") < 6 {
+		query := `drop table if exists spravci;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   	if getTableVersion("spravci") < 6 {
-	   		query := `drop table if exists spravci;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-
-	   		query = `
+		query = `
 	   			CREATE TABLE spravci (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			jmeno VARCHAR(20),
 	       			prijmeni VARCHAR(30),
 	       			user INT,
 	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
 
-	   	if getTableVersion("technici") < 6 {
-	   		query := `drop table if exists technici;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("technici") < 6 {
+		query := `drop table if exists technici;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE technici (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			jmeno VARCHAR(20),
 	       			prijmeni VARCHAR(30),
 	       			user INT,
 	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
 
-	   	if getTableVersion("dispeceri") < 6 {
-	   		query := `drop table if exists dispeceri;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("dispeceri") < 6 {
+		query := `drop table if exists dispeceri;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE dispeceri (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			jmeno VARCHAR(20),
 	       			prijmeni VARCHAR(30),
 	       			user INT,
 	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
 
-	   	if getTableVersion("ridici") < 6 {
-	   		query := `drop table if exists ridici;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("ridici") < 6 {
+		query := `drop table if exists ridici;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE ridici (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			jmeno VARCHAR(20),
 	       			prijmeni VARCHAR(30),
 	       			user INT,
 	       			FOREIGN KEY (user) REFERENCES users(id)) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   	}
-	   	//create_users()
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+	//create_users()
 
-	   	if getTableVersion("zastavky") < 6 {
-	   		query := `drop table if exists zastavky;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("zastavky") < 6 {
+		query := `drop table if exists zastavky;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE zastavky (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			nazov_zastavky VARCHAR(255)) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		feed_zastavky()
-	   	}
+		feed_zastavky()
+	}
 
-	   	if getTableVersion("linky") < 6 {
-	   		query := `drop table if exists linky;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("linky") < 6 {
+		query := `drop table if exists linky;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE linky (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			nazev INT) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_linky()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_linky()
+	}
 
-	   	if getTableVersion("linka_zastavka") < 6 {
-	   		query := `drop table if exists linka_zastavka;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("linka_zastavka") < 6 {
+		query := `drop table if exists linka_zastavka;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE linka_zastavka (
 	   				poradi INT,
 	       			cas VARCHAR(50), -- tbd the len of varchar
@@ -336,60 +340,60 @@ func InitDB() {
 	   				FOREIGN KEY (zastavka) REFERENCES zastavky(id),
 	   				FOREIGN KEY (linka) REFERENCES linky(id)
 	   			) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_linka_zastavka()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_linka_zastavka()
+	}
 
-	   	if getTableVersion("vozy") < 6 {
-	   		query := `drop table if exists vozy;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("vozy") < 6 {
+		query := `drop table if exists vozy;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE vozy (
 	   				spz VARCHAR(7) PRIMARY KEY,
 	   			    druh VARCHAR(20),
 	   			    znacka VARCHAR(50) NOT NULL,
 	   			    kapacita INT) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_vozy()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_vozy()
+	}
 
-	   	if getTableVersion("stav_zavady") < 6 {
-	   		query := `drop table if exists stav_zavady;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("stav_zavady") < 6 {
+		query := `drop table if exists stav_zavady;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE stav_zavady (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    stav VARCHAR(255)
 	   			    ) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_stav_zavady()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_stav_zavady()
+	}
 
-	   	if getTableVersion("zavady") < 6 {
-	   		query := `drop table if exists zavady;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("zavady") < 6 {
+		query := `drop table if exists zavady;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE zavady (
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			spz VARCHAR(7),
@@ -400,21 +404,21 @@ func InitDB() {
 	   			    FOREIGN KEY (spz) REFERENCES vozy(spz),
 	   			    FOREIGN KEY (autor) REFERENCES spravci(id) ON DELETE SET NULL,
 	   			    FOREIGN KEY (technik) REFERENCES technici(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_zavady()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_zavady()
+	}
 
-	   	if getTableVersion("tech_zaznamy") < 6 {
-	   		query := `drop table if exists tech_zaznamy;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("tech_zaznamy") < 6 {
+		query := `drop table if exists tech_zaznamy;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE tech_zaznamy (
 	   				spz_vozidla varchar(7),
 	       			datum DATE,
@@ -422,40 +426,40 @@ func InitDB() {
 	   			    PRIMARY KEY (spz_vozidla, datum),
 	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
 	   			    FOREIGN KEY (zavada) REFERENCES zavady(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_tech_zaznamy()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_tech_zaznamy()
+	}
 
-	   	if getTableVersion("dny_jizdy") < 6 {
-	   		query := `drop table if exists dny_jizdy;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("dny_jizdy") < 6 {
+		query := `drop table if exists dny_jizdy;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE dny_jizdy (
 	   			    id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    den_jizdy VARCHAR(50) NOT NULL
 	   			    ) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_dny_jizdy()
-	   	}
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_dny_jizdy()
+	}
 
-	   	if getTableVersion("spoje") < 6 {
-	   		query := `drop table if exists spoje;`
-	   		_, err := db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
+	if getTableVersion("spoje") < 6 {
+		query := `drop table if exists spoje;`
+		_, err := db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
-	   		query = `
+		query = `
 	   			CREATE TABLE spoje (
 	   			    linka INT NOT NULL,
 	   				cas_odjezdu varchar(10) NOT NULL,
@@ -467,11 +471,11 @@ func InitDB() {
 	       			FOREIGN KEY (linka) REFERENCES linky(id),
 	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id),
 	       			FOREIGN KEY (smer_jizdy) REFERENCES zastavky(id)) comment="6" character set utf8mb4;`
-	   		_, err = db.Exec(query)
-	   		if err != nil {
-	   			log.Fatal(err.Error())
-	   		}
-	   		feed_spoje()
-	   	}*/
+		_, err = db.Exec(query)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		feed_spoje()
+	}
 
 }

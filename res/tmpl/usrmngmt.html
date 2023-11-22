@@ -27,7 +27,6 @@
                 alert("You can't delete admin.");
             } else {
                 alert("Delete user with ID: " + userID);
-
                 $.ajax({
                     method: "GET",
                     url: "/remove",
@@ -43,8 +42,6 @@
                 });
             }
         }
-
-        // ... (other functions remain the same)
     </script>
 </head>
 <body>
@@ -72,23 +69,35 @@
         <td><input type="checkbox" id="per{{.ID}}-manager" disabled="true"/></td>
         <td><button class="delete-btn" onclick="deleteUser({{.ID}})">❌</button></td>
         <td><button class="deactivate-btn" onclick="deactivateUser({{.ID}})">🚫</button></td>
-        <td><button class="edit-btn" onclick="editUser({{.ID}})">✏️</button></td>
+        <td><button class="edit-btn" id="edit{{.ID}}" onclick="editUser({{.ID}})">✏️</button></td>
     </tr>
 
     <script>
         function editUser(id) {
-            document.getElementById("per" + id + "-admin").disabled = false
-            document.getElementById("per" + id + "-driver").disabled = false
-            document.getElementById("per" + id + "-technician").disabled = false
-            document.getElementById("per" + id + "-dispatcher").disabled = false
-            document.getElementById("per" + id + "-manager").disabled = false
+            toggleCheckboxState(id, false);
+            document.getElementById("edit" + id).textContent = "✅";
+            document.getElementById("edit" + id).onclick = function() {
+                submitChanges(id);
+            };
+        }
+
+        function submitChanges(id) {
+            alert("Accept changes?")
+            toggleCheckboxState(id, true);
+            document.getElementById("edit" + id).textContent = "✏️️️️";
+            document.getElementById("edit" + id).onclick = function() {
+                editUser(id);
+            };
+        }
+
+        function toggleCheckboxState(id, disabled) {
+            const permissions = ["admin", "driver", "technician", "dispatcher", "manager"];
+            permissions.forEach(permission => {
+                document.getElementById("per" + id + "-" + permission).disabled = disabled;
+            });
         }
 
         function updateCheckboxes(permission, id) {
-            console.log(permission)
-            console.log(id)
-
-
             if (permission & 1) {
                 console.log("per" + id + "-admin")
                 document.getElementById("per" + id + "-admin").checked = true
@@ -115,13 +124,8 @@
             }
         }
 
-
-        // Fetch permission value from the server
         permission = Number({{.Permissions}});
         id = Number({{.ID}});
-
-        console.log(permission)
-        console.log(id)
 
         updateCheckboxes(permission, id);
     </script>

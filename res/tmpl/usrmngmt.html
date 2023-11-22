@@ -52,7 +52,11 @@
     <tr>
         <th>ID</th>
         <th>User name</th>
-        <th>Permissions</th>
+        <th>Admin 1</th>
+        <th>Driver 2</th>
+        <th>Technician 4</th>
+        <th>Dispatcher 8</th>
+        <th>Manager 16</th>
         <th>Delete</th>
         <th>Deactivate</th>
         <th>Edit</th>
@@ -61,11 +65,67 @@
     <tr id="usr{{.ID}}">
         <td>{{.ID}}</td>
         <td>{{.Username}}</td>
-        <td>{{.Permissions}}</td>
+        <td><input type="checkbox" id="per{{.ID}}-admin" disabled="true"/></td>
+        <td><input type="checkbox" id="per{{.ID}}-driver" disabled="true"/></td>
+        <td><input type="checkbox" id="per{{.ID}}-technician" disabled="true"/></td>
+        <td><input type="checkbox" id="per{{.ID}}-dispatcher" disabled="true"/></td>
+        <td><input type="checkbox" id="per{{.ID}}-manager" disabled="true"/></td>
         <td><button class="delete-btn" onclick="deleteUser({{.ID}})">❌</button></td>
         <td><button class="deactivate-btn" onclick="deactivateUser({{.ID}})">🚫</button></td>
         <td><button class="edit-btn" onclick="editUser({{.ID}})">✏️</button></td>
     </tr>
+
+    <script>
+        function editUser(id) {
+            document.getElementById("per" + id + "-admin").disabled = false
+            document.getElementById("per" + id + "-driver").disabled = false
+            document.getElementById("per" + id + "-technician").disabled = false
+            document.getElementById("per" + id + "-dispatcher").disabled = false
+            document.getElementById("per" + id + "-manager").disabled = false
+        }
+
+        function updateCheckboxes(permission, id) {
+            console.log(permission)
+            console.log(id)
+
+
+            if (permission & 1) {
+                console.log("per" + id + "-admin")
+                document.getElementById("per" + id + "-admin").checked = true
+            }
+
+            if (permission & 2) {
+                console.log("per" + id + "-driver")
+                document.getElementById("per" + id + "-driver").checked = true
+            }
+
+            if (permission & 4) {
+                console.log("per" + id + "-technician")
+                document.getElementById("per" + id + "-technician").checked = true
+            }
+
+            if (permission & 8) {
+                console.log("per" + id + "-dispatcher")
+                document.getElementById("per" + id + "-dispatcher").checked = true
+            }
+
+            if (permission & 16) {
+                console.log("per" + id + "-manager")
+                document.getElementById("per" + id + "-manager").checked = true
+            }
+        }
+
+
+        // Fetch permission value from the server
+        permission = Number({{.Permissions}});
+        id = Number({{.ID}});
+
+        console.log(permission)
+        console.log(id)
+
+        updateCheckboxes(permission, id);
+    </script>
+
     {{end}}
 </table>
 </body>

@@ -389,7 +389,7 @@ func InitDB() {
 	   			    popis VARCHAR(255),
 	   			    autor INT NOT NULL ,
 	   			    PRIMARY KEY (spz_vozidla, datum),
-	   			    FOREIGN KEY (autor) REFERENCES technici(user),
+	   			    FOREIGN KEY (autor) á technici(user),
 	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
 	   			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
 

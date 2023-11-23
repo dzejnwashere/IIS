@@ -109,6 +109,26 @@ func static_site(template_name string, perm typedef.Permission) func(writer http
 	}
 }
 
+func update_perms(writer http.ResponseWriter, request *http.Request) {
+	if !auth.HasPermission(request, typedef.AdminPerm) {
+		writer.WriteHeader(403)
+		fmt.Fprint(writer, "403 insufficient permissions")
+		return
+	}
+	userID, _ := strconv.Atoi(request.URL.Query().Get("userID"))
+	perms, _ := strconv.Atoi(request.URL.Query().Get("perms"))
+
+	fmt.Println(userID)
+	fmt.Println(perms)
+
+	err := db.UpdatePermissions(userID, perms)
+	if err != nil {
+		writer.WriteHeader(403)
+		fmt.Fprint(writer, "403 insufficient permissions")
+		return
+	}
+}
+
 func demo(writer http.ResponseWriter, request *http.Request) {
 	if !auth.HasPermission(request, typedef.AdminPerm) {
 		writer.WriteHeader(403)
@@ -125,6 +145,46 @@ func demo(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprint(writer, "Succesfully inserted demo data")
 }
 
+func doc(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/doc.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, nil)
+	if err != nil {
+		return
+	}
+}
+
+func failures(writer http.ResponseWriter, request *http.Request) {
+	failures := db.GetFailures()
+
+	files, err := template.ParseFiles("res/tmpl/failures.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, failures)
+	if err != nil {
+		return
+	}
+}
+
+func technical_records(writer http.ResponseWriter, request *http.Request) {
+	technicalRecords := db.GetTechnicalRecords()
+
+	files, err := template.ParseFiles("res/tmpl/technical-records.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, technicalRecords)
+	if err != nil {
+		return
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -136,6 +196,10 @@ func main() {
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)
 	r.HandleFunc("/remove", remove)
+	r.HandleFunc("/update-perms", update_perms)
+	r.HandleFunc("/failures", failures)
+	r.HandleFunc("/doc", doc)
+	r.HandleFunc("/technical-records", technical_records)
 
 	db.InitDB()
 

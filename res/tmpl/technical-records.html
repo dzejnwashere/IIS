@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #D22B2B;
+            color: white;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function deleteUser(userID) {
+            // Add logic to handle delete action for the user with the specified ID
+            if (userID === 1) {
+                alert("You can't delete admin.");
+            } else {
+                alert("Delete user with ID: " + userID);
+                $.ajax({
+                    method: "GET",
+                    url: "/remove",
+                    data: { userID: userID },
+                    success: function(response) {
+                        alert("User with ID " + userID + " removed successfully!");
+                        // Update the table with the new data
+                        $('#usr'+userID).remove();
+                    },
+                    error: function() {
+                        alert("An error occurred while removing the user.");
+                    }
+                });
+            }
+        }
+    </script>
+</head>
+<body>
+<h2>Technical Records 🚎</h2><br>
+
+<select name="failures" id="failures">
+    <option value="all">All</option>
+    <option value="tbd">To be done</option>
+    <option value="wip">Work in progress</option>
+    <option value="done">Done</option>
+</select>
+
+<table id="technical-records">
+    <tr>
+        <th>SPZ</th>
+        <th>Date</th>
+        <th>Failure</th>
+        <th>Details</th>
+        <th>AuthorName</th>
+        <th>AuthorSurname</th>
+    </tr>
+
+    {{range .}}
+        <tr id="tech-record{{.SPZ}}{{.Date}}">
+            <td id="spz{{.SPZ}}{{.Date}}">{{.SPZ}}</td>
+            <td id="date{{.SPZ}}{{.Date}}">{{.Date}}</td>
+            <td id="failureID{{.SPZ}}{{.Date}}">{{.Failure.FailureID}}</td>
+            <td id="details{{.SPZ}}{{.Date}}">{{.Details}}</td>
+            <td id="author-name{{.SPZ}}{{.Date}}">{{.AuthorName}}</td>
+            <td id="author-surname{{.SPZ}}{{.Date}}">{{.AuthorSurname}}</td>
+        </tr>
+
+        <script>
+            function editFail(id) {
+                document.getElementById("edit" + id).onclick = function() {
+
+                    var failureID = document.getElementById("failureID" + id);
+                    var spz = document.getElementById("spz" + id);
+                    var authorSurname = document.getElementById("authorSurname" + id);
+                    var technicianSurname = document.getElementById("technicianSurname" + id);
+                    var description = document.getElementById("description" + id);
+                    var state = document.getElementById("state" + id);
+
+                    failureID.innerHTML = '<input type="text" value="' + failureID.innerHTML + '">';
+                    spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
+                    authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
+                    technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
+                    description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
+                    state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
+                };
+            }
+        </script>
+
+    {{end}}
+</table>
+
+<button class="add-failure" >➕</button>
+</body>
+</html>

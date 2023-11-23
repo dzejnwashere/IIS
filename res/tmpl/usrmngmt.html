@@ -45,6 +45,7 @@
     </script>
 </head>
 <body>
+<h2>User management 🚎</h2><br>
 <table id="table-management">
     <tr>
         <th>ID</th>
@@ -54,9 +55,8 @@
         <th>Technician 4</th>
         <th>Dispatcher 8</th>
         <th>Manager 16</th>
-        <th>Delete</th>
-        <th>Deactivate</th>
         <th>Edit</th>
+        <th>Delete</th>
     </tr>
     {{range .}}
     <tr id="usr{{.ID}}">
@@ -67,9 +67,8 @@
         <td><input type="checkbox" id="per{{.ID}}-technician" disabled="true"/></td>
         <td><input type="checkbox" id="per{{.ID}}-dispatcher" disabled="true"/></td>
         <td><input type="checkbox" id="per{{.ID}}-manager" disabled="true"/></td>
-        <td><button class="delete-btn" onclick="deleteUser({{.ID}})">❌</button></td>
-        <td><button class="deactivate-btn" onclick="deactivateUser({{.ID}})">🚫</button></td>
         <td><button class="edit-btn" id="edit{{.ID}}" onclick="editUser({{.ID}})">✏️</button></td>
+        <td><button class="delete-btn" onclick="deleteUser({{.ID}})">❌</button></td>
     </tr>
 
     <script>
@@ -82,12 +81,46 @@
         }
 
         function submitChanges(id) {
+
+            let permission = 0;
+
+            if (document.getElementById("per" + id + "-admin").checked) {
+                permission += 1;
+            }
+
+            if (document.getElementById("per" + id + "-driver").checked) {
+                permission += 2;
+            }
+
+            if (document.getElementById("per" + id + "-technician").checked) {
+                permission += 4;
+            }
+
+            if (document.getElementById("per" + id + "-dispatcher").checked) {
+                permission += 8;
+            }
+
+            if (document.getElementById("per" + id + "-manager").checked) {
+                permission += 16;
+            }
+
             alert("Accept changes?")
-            toggleCheckboxState(id, true);
-            document.getElementById("edit" + id).textContent = "✏️️️️";
-            document.getElementById("edit" + id).onclick = function() {
-                editUser(id);
-            };
+
+            $.ajax({
+                method: "GET",
+                url: "/update-perms",
+                data: { userID: id, perms:permission },
+                success: function(response) {
+                    toggleCheckboxState(id, true);
+                    document.getElementById("edit" + id).textContent = "✏️️️️";
+                    document.getElementById("edit" + id).onclick = function() {
+                        editUser(id);
+                    };
+                },
+                error: function() {
+                    alert("An error occurred while removing the user.");
+                }
+            });
         }
 
         function toggleCheckboxState(id, disabled) {

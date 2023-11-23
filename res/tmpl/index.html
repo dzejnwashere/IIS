@@ -6,11 +6,9 @@
 </head>
 <body>
   {{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
+  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}} <br>
+  {{if .Admin}}<a href="/failures">Failures</a>{{end}} <br>
+  {{if .Admin}}<a href="/technical-records">Technical Records</a>{{end}} <br>
   {{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
-  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}}
-  <form>
-
-  </form>
-  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}}
 </body>
 </html>

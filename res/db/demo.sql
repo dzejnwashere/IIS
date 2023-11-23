@@ -102,9 +102,9 @@ INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
                                                           ('MA103QQ', 2, 3, 'nesvítí levé přední světlo', 2),
                                                           ('MA103QQ', 2, 3, 'prasklé čelní sklo', 2);
 
-INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada) VALUES
-                                                          ('MA018DE', '2023-11-18', NULL),
-                                                          ('MA103QQ', '2023-09-10', 4);
+INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada, popis, autor) VALUES
+                                                          ('MA018DE', '2023-11-18', NULL, 'testi sakj as', 3),
+                                                          ('MA103QQ', '2023-09-10', 4, 'bla vla sldkslkaed', 6);
 
 INSERT INTO dny_jizdy (den_jizdy) VALUES
                                       ('Všetky dni'),

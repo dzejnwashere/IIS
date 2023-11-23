@@ -71,6 +71,12 @@ func CreateOrUpdateUser(id int, username string, passHash string, permission ...
 	}
 }
 
+func UpdatePermissions(id int, permissions int) error {
+	_, err := db.Exec(`UPDATE users SET permissions = ? WHERE id = ?`, permissions, id)
+	fmt.Println(err)
+	return err
+}
+
 func RemoveUser(userID int) {
 	query := `DELETE FROM users WHERE id = ?;`
 	_, err := db.Exec(query, userID)
@@ -112,6 +118,121 @@ func GetAllUsers() []User {
 		log.Fatal(err)
 	}
 	return users
+}
+
+type Failure struct {
+	FailureID         int
+	SPZ               string
+	Description       string
+	TechnicianID      int
+	TechnicianName    string
+	TechnicianSurname string
+	State             string
+	AuthorId          int
+	AuthorName        string
+	AuthorSurname     string
+}
+
+func GetFailures() []Failure {
+	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
+			  JOIN spravci s ON z.autor=s.user
+			  JOIN technici t ON z.technik=t.user
+			  JOIN stav_zavady sz ON z.stav=sz.id;`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	var failures []Failure
+	var fail Failure
+
+	for rows.Next() {
+		err := rows.Scan(&fail.FailureID, &fail.SPZ, &fail.Description, &fail.TechnicianID, &fail.TechnicianName, &fail.TechnicianSurname, &fail.State, &fail.AuthorId, &fail.AuthorName, &fail.AuthorSurname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(fail.FailureID, fail.SPZ, fail.Description, fail.TechnicianID, fail.TechnicianName, fail.TechnicianSurname, fail.State, fail.AuthorId, fail.AuthorName, fail.AuthorSurname)
+		failures = append(failures, fail)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return failures
+}
+
+func GetFailureById(id int) Failure {
+	var fail Failure
+
+	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
+				JOIN spravci s ON z.autor=s.user
+			  	JOIN technici t ON z.technik=t.user
+			  	JOIN stav_zavady sz ON z.stav=sz.id
+			  WHERE z.id = ?;`
+
+	err := db.QueryRow(query, id).Scan(&fail.FailureID, &fail.SPZ, &fail.Description, &fail.TechnicianID, &fail.TechnicianName, &fail.TechnicianSurname, &fail.State, &fail.AuthorId, &fail.AuthorName, &fail.AuthorSurname)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return fail
+}
+
+type TechnicalRecord struct {
+	SPZ           string
+	Date          string
+	Failure       Failure
+	Details       string
+	AuthorID      int
+	AuthorName    string
+	AuthorSurname string
+}
+
+func GetTechnicalRecords() []TechnicalRecord {
+	query := `SELECT tz.spz_vozidla, tz.datum, tz.zavada, tz.popis, t.user, t.jmeno, t.prijmeni FROM tech_zaznamy tz
+			  JOIN technici t ON tz.autor=t.user;`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	var technicalRecords []TechnicalRecord
+	var technicalRecord TechnicalRecord
+	var zavadaIDNull *int
+	var zavadaID sql.NullInt64
+
+	for rows.Next() {
+		err := rows.Scan(&technicalRecord.SPZ, &technicalRecord.Date, &zavadaIDNull, &technicalRecord.Details, &technicalRecord.AuthorID, &technicalRecord.AuthorName, &technicalRecord.AuthorSurname)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if zavadaIDNull != nil {
+			zavadaID = sql.NullInt64{int64(*zavadaIDNull), true}
+		} else {
+			zavadaID = sql.NullInt64{Valid: false}
+		}
+
+		if zavadaID.Valid {
+			technicalRecord.Failure = GetFailureById(int(zavadaID.Int64))
+		}
+
+		technicalRecords = append(technicalRecords, technicalRecord)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return technicalRecords
 }
 
 func FeedDemoData() error {
@@ -265,9 +386,12 @@ func InitDB() {
 	   				spz_vozidla varchar(7),
 	       			datum DATE,
 	   			    zavada INT,
+	   			    popis VARCHAR(255),
+	   			    autor INT NOT NULL ,
 	   			    PRIMARY KEY (spz_vozidla, datum),
+	   			    FOREIGN KEY (autor) REFERENCES technici(user),
 	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
-	   			    FOREIGN KEY (zavada) REFERENCES zavady(id) ON DELETE SET NULL) comment="6" character set utf8mb4;`)
+	   			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
 
 	optionallyCreateTable("dny_jizdy", 6, `
 	   			CREATE TABLE dny_jizdy (

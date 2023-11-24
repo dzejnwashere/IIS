@@ -235,6 +235,31 @@ func GetTechnicalRecords() []TechnicalRecord {
 	return technicalRecords
 }
 
+func GetSPZs() []string {
+	var spzs []string
+	var spz string
+
+	query := `SELECT spz FROM vozy;`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&spz)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		spzs = append(spzs, spz)
+	}
+	return spzs
+}
+
 func FeedDemoData() error {
 	file, err := os.ReadFile("res/db/demo.sql")
 	if err != nil {
@@ -389,7 +414,7 @@ func InitDB() {
 	   			    popis VARCHAR(255),
 	   			    autor INT NOT NULL ,
 	   			    PRIMARY KEY (spz_vozidla, datum),
-	   			    FOREIGN KEY (autor) á technici(user),
+	   			    FOREIGN KEY (autor) REFERENCES technici(user),
 	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
 	   			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
 

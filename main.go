@@ -4,6 +4,7 @@ import (
 	"IIS/auth"
 	"IIS/db"
 	"IIS/typedef"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
@@ -185,6 +186,18 @@ func technical_records(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func get_spzs(writer http.ResponseWriter, request *http.Request) {
+	spzs := db.GetSPZs()
+
+	spzsJSON, err := json.Marshal(spzs)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(spzsJSON)
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -200,6 +213,7 @@ func main() {
 	r.HandleFunc("/failures", failures)
 	r.HandleFunc("/doc", doc)
 	r.HandleFunc("/technical-records", technical_records)
+	r.HandleFunc("/get-spzs", get_spzs)
 
 	db.InitDB()
 

@@ -186,6 +186,19 @@ func technical_records(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func get_stops(writer http.ResponseWriter, request *http.Request) {
+	stops := db.GetStops()
+
+	stopsJSON, err := json.Marshal(stops)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(stopsJSON)
+}
+
 func get_spzs(writer http.ResponseWriter, request *http.Request) {
 	spzs := db.GetSPZs()
 
@@ -196,6 +209,31 @@ func get_spzs(writer http.ResponseWriter, request *http.Request) {
 	}
 	writer.Header().Set("Content-Type", "application/json")
 	writer.Write(spzsJSON)
+}
+
+func spz_exists(writer http.ResponseWriter, request *http.Request) {
+	exists := db.SPZexists(request.URL.Query().Get("SPZ"))
+
+	existsJSON, err := json.Marshal(exists)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(existsJSON)
+}
+
+func get_specific_failures_state(writer http.ResponseWriter, request *http.Request) {
+	state, _ := strconv.Atoi(request.URL.Query().Get("state"))
+	failures := db.GetFailuresForSpecificSPZWithSpecificState(request.URL.Query().Get("SPZ"), state)
+
+	failuresJSON, err := json.Marshal(failures)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(failuresJSON)
 }
 
 func main() {
@@ -216,6 +254,9 @@ func main() {
 	r.HandleFunc("/get-spzs", get_spzs)
 	r.HandleFunc("/lines", lines)
 	r.HandleFunc("/line_stops", line_stops)
+	r.HandleFunc("/get-stops", get_stops)
+	r.HandleFunc("/get-specific-failures-state", get_specific_failures_state)
+	r.HandleFunc("/spz-exists", spz_exists)
 
 	db.InitDB()
 

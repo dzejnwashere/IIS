@@ -2,6 +2,50 @@
 <html>
 <head>
     <style>
+        .popup-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 500px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .popup-row {
+            margin-bottom: 25px;
+        }
+
+        .popup-button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .popup-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -45,82 +89,148 @@
     </script>
 </head>
 <body>
-    <h2>Failures 🚎</h2><br>
+<h2>Failures 🚎</h2><br>
 
-    <select name="failures" id="failures">
-        <option value="all">All</option>
-        <option value="tbd">To be done</option>
-        <option value="wip">Work in progress</option>
-        <option value="done">Done</option>
-    </select>
+<select name="failures" id="failures">
+    <option value="all">All</option>
+    <option value="tbd">To be done</option>
+    <option value="wip">Work in progress</option>
+    <option value="done">Done</option>
+</select>
 
-    <table id="table-zavady">
-        <tr>
-            <th>ID</th>
-            <th>SPZ</th>
-            <th>Author</th>
-            <th>Technician</th>
-            <th>Description</th>
-            <th>State</th>
-            <th>Edit</th>
-            <th>Done</th>
+<table id="table-zavady">
+    <tr>
+        <th>ID</th>
+        <th>SPZ</th>
+        <th>Author</th>
+        <th>Technician</th>
+        <th>Description</th>
+        <th>State</th>
+        <th>Edit</th>
+        <th>Done</th>
+    </tr>
+
+    {{range .}}
+        <tr id="failure{{.FailureID}}">
+            <td id="failureID{{.FailureID}}">{{.FailureID}}</td>
+            <td id="spz{{.FailureID}}">{{.SPZ}}</td>
+            <td id="authorSurname{{.FailureID}}">{{.AuthorSurname}}</td>
+            <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
+            <td id="description{{.FailureID}}">{{.Description}}</td>
+            <td id="state{{.FailureID}}">{{.State}}</td>
+            <td><button class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
+            <td><button class="done-btn" onclick="doneFail({{.FailureID}})">✅</button></td>
         </tr>
 
-        {{range .}}
-            <tr id="failure{{.FailureID}}">
-                <td id="failureID{{.FailureID}}">{{.FailureID}}</td>
-                <td id="spz{{.FailureID}}">{{.SPZ}}</td>
-                <td id="authorSurname{{.FailureID}}">{{.AuthorSurname}}</td>
-                <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
-                <td id="description{{.FailureID}}">{{.Description}}</td>
-                <td id="state{{.FailureID}}">{{.State}}</td>
-                <td><button class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
-                <td><button class="done-btn" onclick="doneFail({{.FailureID}})">✅</button></td>
-            </tr>
+        <script>
 
-            <script>
+            document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
+                editFail(id);
+                //zmenit text na buttone na ✅
+            }
+
+            document.getElementById("doneFail" + {{.FailureID}}).onclick = function() {
+                doneFail(id);
+            }
+
+            function doneFail(id) {
+                //change state to "Vyřešeno" v DB
+            }
+
+            function editFail(id) {
+                var spz = document.getElementById("spz" + id);
+                var authorSurname = document.getElementById("authorSurname" + id);
+                var technicianSurname = document.getElementById("technicianSurname" + id);
+                var description = document.getElementById("description" + id);
+                var state = document.getElementById("state" + id);
+
+                spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
+                authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
+                technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
+                description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
+                state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
 
                 document.getElementById("editFail" + id).onclick = function() {
-                    editFail(id);
-                    //zmenit text na buttone na ✅
+                    changeEditState(id);
                 }
+            }
 
-                document.getElementById("doneFail" + id).onclick = function() {
-                    doneFail(id);
-                }
+            function changeEditState(id){
+                //zmeniť hodnoty v db
+                //späť na default zobrazenie (bez textfieldu)
+            }
 
-                function doneFail(id) {
-                    //change state to "Vyřešeno" v DB
-                }
+        </script>
 
-                function editFail(id) {
-                        var spz = document.getElementById("spz" + id);
-                        var authorSurname = document.getElementById("authorSurname" + id);
-                        var technicianSurname = document.getElementById("technicianSurname" + id);
-                        var description = document.getElementById("description" + id);
-                        var state = document.getElementById("state" + id);
+    {{end}}
+</table>
+<br>
 
-                        spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
-                        authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
-                        technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
-                        description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
-                        state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
+<button class="create-failure" onclick="openPopupFailures()">➕</button>
 
-                    document.getElementById("editFail" + id).onclick = function() {
-                        changeEditState(id);
-                    }
-                }
+<div id="popup" class="popup-container">
+    <p>Create new failure</p>
+    <div class="popup-row">
+        <label for="spzInput">SPZ:</label>
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" oninput="updateSuggestions(this)">
+        <datalist id="spzSuggestions">
+        </datalist>
+    </div>
 
-                function changeEditState(id){
-                    //zmeniť hodnoty v db
-                    //späť na default zobrazenie (bez textfieldu)
-                }
+    <div class="popup-row">
+        <label for="authorInput">Author:</label>
+        <select>
+            <option value="" disabled selected>Select an option</option>
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <!-- Add more options as needed -->
+        </select>
+    </div>
 
-            </script>
+    <div class="popup-row">
+        <label for="technicianInput">Technician:</label>
+        <select>
+            <option value="" disabled selected>Select an option</option>
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <!-- Add more options as needed -->
+        </select>
+    </div>
 
-        {{end}}
-    </table>
-    <br>
-    <button class="add-failure" >➕</button>
+    <div class="popup-row">
+        <label for="descriptionInput">Description:</label>
+        <textarea id="descriptionInput" placeholder="TODO"></textarea>
+    </div>
+
+    <div class="popup-row">
+        <label for="stateInput">State:</label>
+        <select>
+            <option value="Přideleno">Přideleno</option>
+            <option value="vreseni">V řešení</option>
+            <option value="pozastaveno">Pozastaveno</option>
+            <option value="vyreseno">Vyřešeno</option>
+        </select>
+    </div>
+
+    <button onclick="closePopupFailures()">Close</button>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<script>
+    let spzData = [];
+
+    function openPopupFailures() {
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closePopupFailures() {
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+</script>
+
 </body>
 </html>

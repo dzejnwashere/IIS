@@ -3,12 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
+    <style>
+        .container {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            background: url('https://images.unsplash.com/photo-1606937779333-177b3a4d63db?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+
 </head>
 <body>
-  {{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
-  {{if .Admin}}<a href="/usrmngmt">User management</a>{{end}} <br>
-  {{if .Admin}}<a href="/failures">Failures</a>{{end}} <br>
-  {{if .Admin}}<a href="/technical-records">Technical Records</a>{{end}} <br>
-  {{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
+{{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
+{{if .Admin}}<a href="/usrmngmt">User management</a>{{end}} <br>
+{{if .Admin}}<a href="/failures">Failures</a>{{end}} <br>
+{{if .Admin}}<a href="/technical-records">Technical Records</a>{{end}} <br>
+{{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
+
+
+<div class="container">
+    <input type="text" list="stopSuggestions1" class="text-field" placeholder="Začiatok cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')"><br>
+    <datalist id="stopSuggestions1">
+    </datalist>
+    <input type="text" list="stopSuggestions2" class="text-field" placeholder="Koniec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
+    <datalist id="stopSuggestions2">
+    </datalist>
+    <button>Search 🔍</button>
+</div>
+
+<script>
+    let stopData = [];
+
+    function fetchData() {
+        fetch('/get-stops')
+            .then(response => response.json())
+            .then(data => {
+                stopData = data;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    function updateSuggestions(input, datalistId) {
+        console.log(input);
+        var inputValue = input.toLowerCase();
+        var dataList = document.getElementById(datalistId);
+
+        dataList.innerHTML = '';
+
+        var filteredSuggestions = stopData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            dataList.appendChild(option);
+        });
+    }
+
+    fetchData();
+</script>
+
 </body>
 </html>

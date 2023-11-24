@@ -2,7 +2,6 @@
 <html>
 <head>
     <style>
-        /* Style for the popup container */
         .popup-container {
             display: none;
             position: fixed;
@@ -19,10 +18,9 @@
         }
 
         .popup-row {
-            margin-bottom: 25px; /* Add 25px bottom margin between rows */
+            margin-bottom: 25px;
         }
 
-        /* Style for the overlay background */
         .overlay {
             display: none;
             position: fixed;
@@ -33,8 +31,7 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
-    </style>
-    <style>
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -51,6 +48,33 @@
             background-color: #D22B2B;
             color: white;
         }
+
+        .popup-button-cancel {
+            padding: 10px;
+            background-color: #dd1115;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup-button-create {
+            margin-top: 10px;
+            margin-left: 100px;
+            padding: 10px;
+            background-color: #00990c ;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .details-input {
+            width: 400px;
+            height: 150px;
+            text-align: start;
+        }
+
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript">
@@ -119,41 +143,34 @@
     <p>Create new technical record</p>
     <div class="popup-row">
         <label for="spzInput">SPZ:</label>
-        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" oninput="updateSuggestions(this)">
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
         <datalist id="spzSuggestions">
         </datalist>
+        <label for="spzInput" id="spzInputStatus">❌</label>
     </div>
     <div class="popup-row">
         <label for="dateInput">Date:</label>
-        <input type="text" id="dateInput" placeholder="TODO">
-        <select>
-            <option value="" disabled selected>Select an option</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <!-- Add more options as needed -->
-        </select>
+        <input type="date" id="dateInput">
     </div>
-    <div class="popup-row">
-        <label for="field3">Field 3:</label>
-        <input type="text" id="field3" placeholder="Enter text">
-        <select>
-            <option value="" disabled selected>Select an option</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <!-- Add more options as needed -->
-        </select>
+    <div id="tableContainer" class="popup-row">
+        <label for="failure-table">Failures:</label>
+        <table id="failure-table">
+            <thead>
+            <tr>
+                <th>Details</th>
+                <th>Assign</th>
+            </tr>
+            </thead>
+            <tbody id="failure-table-body">
+            </tbody>
+        </table>
     </div>
-    <div class="popup-row">
-        <label for="field4">Field 4:</label>
-        <input type="text" id="field4" placeholder="Enter text">
-        <select>
-            <option value="" disabled selected>Select an option</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <!-- Add more options as needed -->
-        </select>
+    <div>
+        <label for="detailsInput">Details:</label>
+        <input type="text" id="detailsInput" class="details-input">
     </div>
-    <button onclick="closePopup()">Close</button>
+    <button onclick="closePopup()" class="popup-button-cancel">Close</button>
+    <button onclick="create()" class="popup-button-create">Create</button>
 </div>
 
 <div id="overlay" class="overlay"></div>
@@ -164,9 +181,15 @@
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
+        resizePopupToContent()
     }
 
     function closePopup() {
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function create() {
         document.getElementById('popup').style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
     }
@@ -178,7 +201,6 @@
                 spzData = data
             })
             .catch(error => {
-                // Handle errors
                 console.error('Error fetching data:', error);
             });
     }
@@ -198,6 +220,64 @@
             option.value = suggestion;
             dataList.appendChild(option);
         });
+    }
+
+    function validateSpz(input) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    document.getElementById("spzInputStatus").innerHTML = "✅"
+                    getFailuresForVehicle(input)
+                    resizePopupToContent()
+                } else if(response === false) {
+                    document.getElementById("spzInputStatus").innerHTML = "❌"
+                }
+            },
+            error: function() {
+                console.log("ERROR")
+            }
+        });
+    }
+
+    function getFailuresForVehicle(SPZ) {
+        var tableBody = document.getElementById("failure-table-body");
+        tableBody.innerHTML = '';
+        $.ajax({
+            method: "GET",
+            url: "/get-specific-failures-state",
+            data: { SPZ: SPZ, state : 2 },
+            success: function(response) {
+                if(response === null) {
+                    tableBody.innerText = "No failures for selected vehicle."
+                } else {
+                    response.forEach(function (item) {
+                        var row = tableBody.insertRow()
+
+                        var cellDetails = row.insertCell();
+                        cellDetails.textContent = item["Description"]
+
+                        var cellAssign = row.insertCell();
+                        var checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        cellAssign.appendChild(checkbox)
+                    })
+                }
+            },
+            error: function() {
+                console.log("ERROR")
+            }
+        });
+    }
+
+    function resizePopupToContent() {
+        var popup = document.getElementById('popup');
+        var content = document.getElementById('popup-content');
+
+        popup.style.width = content.offsetWidth + 'px';
+        popup.style.height = content.offsetHeight + 'px';
     }
 
     fetchData();

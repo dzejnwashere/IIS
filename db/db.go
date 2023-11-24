@@ -165,6 +165,57 @@ func GetFailures() []Failure {
 	return failures
 }
 
+func SPZexists(input string) bool {
+	query := `SELECT COUNT(*) FROM vozy WHERE spz=?;`
+	var cnt int
+
+	err := db.QueryRow(query, input).Scan(&cnt)
+
+	if err != nil {
+		fmt.Printf("ERROR") //TODO
+	}
+
+	if cnt == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func GetFailuresForSpecificSPZWithSpecificState(SPZ string, state int) []Failure {
+	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
+			  JOIN spravci s ON z.autor=s.user
+			  JOIN technici t ON z.technik=t.user
+			  JOIN stav_zavady sz ON z.stav=sz.id
+            WHERE sz.id = ? AND z.SPZ = ?;`
+
+	rows, err := db.Query(query, state, SPZ)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	var failures []Failure
+	var fail Failure
+
+	for rows.Next() {
+		err := rows.Scan(&fail.FailureID, &fail.SPZ, &fail.Description, &fail.TechnicianID, &fail.TechnicianName, &fail.TechnicianSurname, &fail.State, &fail.AuthorId, &fail.AuthorName, &fail.AuthorSurname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(fail.FailureID, fail.SPZ, fail.Description, fail.TechnicianID, fail.TechnicianName, fail.TechnicianSurname, fail.State, fail.AuthorId, fail.AuthorName, fail.AuthorSurname)
+		failures = append(failures, fail)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return failures
+}
+
 func GetFailureById(id int) Failure {
 	var fail Failure
 
@@ -258,6 +309,31 @@ func GetSPZs() []string {
 		spzs = append(spzs, spz)
 	}
 	return spzs
+}
+
+func GetStops() []string {
+	var stops []string
+	var stop string
+
+	query := `SELECT nazov_zastavky FROM zastavky;`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&stop)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		stops = append(stops, stop)
+	}
+	return stops
 }
 
 func FeedDemoData() error {

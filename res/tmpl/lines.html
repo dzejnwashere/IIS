@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line management</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #D22B2B;
+            color: white;
+        }
+
+        tr.selected {
+            background-color: #f2d2d2
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h2>Line management 🚎</h2><br>
+<table id="linky">
+    <thead>
+    <tr>
+        <th>Line</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+    {{range .}}
+    <tr id="line{{.Id}}">
+        <td>{{.Name}}</td>
+    </tr>
+
+
+    {{end}}
+</table>
+<table id="zastavky">
+    <thead>
+    <tr>
+        <th>Stop</th>
+        <th>Route time</th>
+        <th>Delete</th>
+    </tr>
+    </thead>
+</table>
+<script>
+    $("#linky tr").click(function(){
+        $(this).addClass('selected').siblings().removeClass('selected');
+        var value=$(this).find('td:first').html();
+        $.ajax({
+            url: "/line_stops",
+            data: {line_id: value},
+            success: function(response) {
+                var ar = response.split("\n")
+                $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead>")
+                for (var i = 0; i < ar.length - 1; i++) {
+                    var a = ar[i].split(";")
+                    $("#zastavky").append("<tr id='stop-" + a[0] + "'><td>" + a[1] + "</td><td>"+a[2]+"</td></tr>")
+                }
+            },
+            error: function() {
+                alert("An error occurred while fetching the line stops.");
+            }
+        })
+    });
+</script>
+</body>
+</html>

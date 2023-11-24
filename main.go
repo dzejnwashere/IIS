@@ -214,6 +214,8 @@ func main() {
 	r.HandleFunc("/doc", doc)
 	r.HandleFunc("/technical-records", technical_records)
 	r.HandleFunc("/get-spzs", get_spzs)
+	r.HandleFunc("/lines", lines)
+	r.HandleFunc("/line_stops", line_stops)
 
 	db.InitDB()
 

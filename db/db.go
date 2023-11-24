@@ -370,10 +370,9 @@ func InitDB() {
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			nazev INT) comment="6" character set utf8mb4;`)
 
-	optionallyCreateTable("linka_zastavka", 6, `
+	optionallyCreateTable("linka_zastavka", 7, `
 	   			CREATE TABLE linka_zastavka (
-	   				poradi INT,
-	       			cas VARCHAR(50), -- tbd the len of varchar
+	       			cas TIME,
 	   			    zastavka INT NOT NULL,
 	   			    linka INT NOT NULL,
 	   				PRIMARY KEY (zastavka, linka),

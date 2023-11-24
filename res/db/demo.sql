@@ -75,14 +75,14 @@ INSERT INTO linky (nazev) VALUES
                               (10),
                               (11);
 
-INSERT INTO linka_zastavka (poradi, cas, zastavka, linka) VALUES
-                                                              (1, '1:00', 2, 1),
-                                                              (2, '1:05', 3, 1),
-                                                              (3, '1:07', 1, 1),
-                                                              (1, '1:20', 4, 2),
-                                                              (2, '1:30', 19, 2),
-                                                              (3, '1:40', 22, 2),
-                                                              (4, '1:50', 23, 2);
+INSERT INTO linka_zastavka (cas, zastavka, linka) VALUES
+                                                              ('100', 2, 1),
+                                                              ('105', 3, 1),
+                                                              ('107', 1, 1),
+                                                              ('120', 4, 2),
+                                                              ('130', 19, 2),
+                                                              ('140', 22, 2),
+                                                              ('150', 23, 2);
 
 INSERT INTO vozy (spz, druh, znacka, kapacita) VALUES
                                                    ('MA018DE', 'električka', 'Škoda', 118),

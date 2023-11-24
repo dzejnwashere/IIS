@@ -9,7 +9,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 400px;
-            height: 500px;
+            height: 450px;
             padding: 20px;
             background-color: #fff;
             border: 1px solid #ccc;
@@ -150,7 +150,8 @@
     </div>
     <div class="popup-row">
         <label for="dateInput">Date:</label>
-        <input type="date" id="dateInput">
+        <input type="date" id="dateInput" onblur="validateDate(this.value)">
+        <label for="dateInput" id="dateInputStatus">❌</label>
     </div>
     <div id="tableContainer" class="popup-row">
         <label for="failure-table">Failures:</label>
@@ -166,22 +167,26 @@
         </table>
     </div>
     <div>
+        <label id="detailsInputStatus" for="detailsInput">❌</label>
         <label for="detailsInput">Details:</label>
-        <input type="text" id="detailsInput" class="details-input">
+        <textarea onblur="validateDetails(this.value)" id="detailsInput" class="details-input"></textarea>
     </div>
     <button onclick="closePopup()" class="popup-button-cancel">Close</button>
-    <button onclick="create()" class="popup-button-create">Create</button>
+    <button id="create-btn" onclick="create()" class="popup-button-create">Create</button>
 </div>
 
 <div id="overlay" class="overlay"></div>
 
 <script>
     let spzData = [];
+    let failures = 0;
+    let valid = false;
+    let validDate = false;
+    let validDetails = false;
 
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
-        resizePopupToContent()
     }
 
     function closePopup() {
@@ -190,6 +195,21 @@
     }
 
     function create() {
+        spz = document.getElementById("spzInput").value
+        date = document.getElementById("dateInput").value
+        details = document.getElementById("detailsInput").value
+
+        var i = 0
+
+        while (i < failures) {
+            var val = document.getElementById('ch' + i).checked
+            console.log("Checkbox" + i + ": " + val)
+            i++
+        }
+
+        console.log("SPZ: " + spz)
+        console.log("Date: " + date)
+        console.log("Details: " + details)
         document.getElementById('popup').style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
     }
@@ -203,6 +223,30 @@
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
+    }
+
+    function validateDate(date) {
+        if(date === "") {
+            console.log("Empty date")
+            document.getElementById("dateInputStatus").innerHTML = "❌"
+            validDate = false
+        } else {
+            console.log(date)
+            document.getElementById("dateInputStatus").innerHTML = "✅"
+            validDate = true
+        }
+    }
+
+    function validateDetails(details) {
+        if(details === "") {
+            console.log("Empty date")
+            document.getElementById("detailsInputStatus").innerHTML = "❌"
+            validDetails = false
+        } else {
+            console.log(details)
+            document.getElementById("detailsInputStatus").innerHTML = "✅"
+            validDetails = true
+        }
     }
 
     function updateSuggestions(input) {
@@ -230,8 +274,8 @@
             success: function(response) {
                 if(response === true) {
                     document.getElementById("spzInputStatus").innerHTML = "✅"
+                    valid = true
                     getFailuresForVehicle(input)
-                    resizePopupToContent()
                 } else if(response === false) {
                     document.getElementById("spzInputStatus").innerHTML = "❌"
                 }
@@ -252,16 +296,23 @@
             success: function(response) {
                 if(response === null) {
                     tableBody.innerText = "No failures for selected vehicle."
+                    resizePopupToContent(1)
                 } else {
+                    resizePopupToContent(response.length)
+                    failures = response.length
+                    var index = 0
                     response.forEach(function (item) {
                         var row = tableBody.insertRow()
 
-                        var cellDetails = row.insertCell();
+                        var cellDetails = row.insertCell()
                         cellDetails.textContent = item["Description"]
 
                         var cellAssign = row.insertCell();
-                        var checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
+                        var checkbox = document.createElement('input')
+                        checkbox.type = 'checkbox'
+                        checkbox.id = 'ch' + index
+                        checkbox.value = "yes"
+                        index++
                         cellAssign.appendChild(checkbox)
                     })
                 }
@@ -272,12 +323,10 @@
         });
     }
 
-    function resizePopupToContent() {
-        var popup = document.getElementById('popup');
-        var content = document.getElementById('popup-content');
-
-        popup.style.width = content.offsetWidth + 'px';
-        popup.style.height = content.offsetHeight + 'px';
+    function resizePopupToContent(rows) {
+        let popup = document.getElementById('popup');
+        let pixels = 450 + rows * 40
+        popup.style.height = pixels.toString() + 'px';
     }
 
     fetchData();

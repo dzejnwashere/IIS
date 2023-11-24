@@ -224,5 +224,4 @@ func InitDB() {
 	       			FOREIGN KEY (linka) REFERENCES linky(id),
 	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id),
 	       			FOREIGN KEY (smer_jizdy) REFERENCES zastavky(id)) comment="6" character set utf8mb4;`)
-
 }

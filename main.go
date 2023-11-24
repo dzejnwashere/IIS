@@ -236,6 +236,19 @@ func get_specific_failures_state(writer http.ResponseWriter, request *http.Reque
 	writer.Write(failuresJSON)
 }
 
+func get_technicians(writer http.ResponseWriter, request *http.Request) {
+	technicians := db.GetTechnicians()
+
+	techniciansJSON, err := json.Marshal(technicians)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(techniciansJSON)
+
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -257,6 +270,7 @@ func main() {
 	r.HandleFunc("/get-stops", get_stops)
 	r.HandleFunc("/get-specific-failures-state", get_specific_failures_state)
 	r.HandleFunc("/spz-exists", spz_exists)
+	r.HandleFunc("/get-technicians", get_technicians)
 
 	db.InitDB()
 

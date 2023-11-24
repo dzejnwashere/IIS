@@ -172,33 +172,21 @@
     <p>Create new failure</p>
     <div class="popup-row">
         <label for="spzInput">SPZ:</label>
-        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" oninput="updateSuggestions(this)">
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
         <datalist id="spzSuggestions">
         </datalist>
-    </div>
-
-    <div class="popup-row">
-        <label for="authorInput">Author:</label>
-        <select>
-            <option value="" disabled selected>Select an option</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <!-- Add more options as needed -->
-        </select>
+        <label for="spzInput" id="spzInputStatus">❌</label>
     </div>
 
     <div class="popup-row">
         <label for="technicianInput">Technician:</label>
-        <select>
-            <option value="" disabled selected>Select an option</option>
-            <option value="option1">Option 1</option>
-            <option value="option2">Option 2</option>
-            <!-- Add more options as needed -->
+        <select id="technicianInput">
+
         </select>
     </div>
 
     <div class="popup-row">
-        <label for="descriptionInput">Description:</label>
+        <label for="descriptionInput">Description:</label><br>
         <textarea id="descriptionInput" placeholder="TODO"></textarea>
     </div>
 
@@ -213,22 +201,112 @@
     </div>
 
     <button onclick="closePopupFailures()">Close</button>
+    <button id="create-btn" onclick="create()">Create</button>
 </div>
 
 <div id="overlay" class="overlay"></div>
 
 <script>
     let spzData = [];
+    let technicianData = [];
 
     function openPopupFailures() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
+        select = document.getElementById('technicianInput')
+        var index = 0
+        technicianData.forEach(function (technician) {
+            console.log(index)
+            var option = document.createElement('option')
+            option.value = technician["Name"] + " " + technician["Surname"]
+            option.innerHTML = technician["Name"] + " " + technician["Surname"]
+            select.appendChild(option)
+            index++
+        })
     }
 
     function closePopupFailures() {
         document.getElementById('popup').style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
     }
+
+    function create() {
+        spz = document.getElementById("spzInput").value
+        date = document.getElementById("dateInput").value
+        details = document.getElementById("detailsInput").value
+
+        console.log("SPZ: " + spz)
+        console.log("Date: " + date)
+        console.log("Details: " + details)
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function fetchData() {
+        fetch('/get-spzs')
+            .then(response => response.json())
+            .then(data => {
+                spzData = data
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    function updateSuggestions(input) {
+        var inputValue = input.value.toLowerCase();
+        var dataList = document.getElementById('spzSuggestions');
+
+        dataList.innerHTML = '';
+
+        var filteredSuggestions = spzData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            dataList.appendChild(option);
+        });
+    }
+
+    function validateSpz(input) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    document.getElementById("spzInputStatus").innerHTML = "✅"
+                } else if(response === false) {
+                    document.getElementById("spzInputStatus").innerHTML = "❌"
+                }
+            },
+            error: function() {
+                console.log("ERROR")
+            }
+        });
+    }
+
+    function resizePopupToContent(rows) {
+        let popup = document.getElementById('popup');
+        let pixels = 450 + rows * 40
+        popup.style.height = pixels.toString() + 'px';
+    }
+
+    function getTechnicians(){
+        fetch('/get-technicians')
+            .then(response => response.json())
+            .then(data => {
+                technicianData = data
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    fetchData();
+    getTechnicians();
 
 </script>
 

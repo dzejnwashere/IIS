@@ -59,7 +59,7 @@ func GetFailureById(id int) Failure {
 	err := db.QueryRow(query, id).Scan(&fail.FailureID, &fail.SPZ, &fail.Description, &fail.TechnicianID, &fail.TechnicianName, &fail.TechnicianSurname, &fail.State, &fail.AuthorId, &fail.AuthorName, &fail.AuthorSurname)
 
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("GetFailureById: " + err.Error())
 	}
 
 	return fail

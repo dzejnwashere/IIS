@@ -249,6 +249,54 @@ func get_technicians(writer http.ResponseWriter, request *http.Request) {
 
 }
 
+func get_actual_user(writer http.ResponseWriter, request *http.Request) {
+	userID := auth.GetUserId(request)
+	fmt.Println("RECEIVED: " + strconv.FormatInt(userID, 10))
+	permissions := db.GetPermissions(userID)
+	var user db.Technician
+	fmt.Println(userID)
+	fmt.Println(permissions)
+	if (permissions & 4) > 0 {
+		fmt.Println("TRUE")
+		user = db.GetTechnician(userID)
+	}
+
+	userJSON, err := json.Marshal(user)
+
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(userJSON)
+}
+
+func create_new_tech_record(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPost {
+		userID := auth.GetUserId(request)
+		perms := db.GetPermissions(userID)
+
+		if ((perms & 4) > 0) || ((perms & 1) > 0) {
+			decoder := json.NewDecoder(request.Body)
+
+			var techRecord db.CreateTechnicalRecord
+
+			err := decoder.Decode(&techRecord)
+			if err != nil {
+				http.Error(writer, "Invalid request body", http.StatusBadRequest)
+				return
+			}
+
+			db.CreateNewTechnicalRecord(techRecord)
+		} else {
+			http.Error(writer, "Bad permissions", http.StatusNetworkAuthenticationRequired)
+			return
+		}
+	}
+
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -271,6 +319,8 @@ func main() {
 	r.HandleFunc("/get-specific-failures-state", get_specific_failures_state)
 	r.HandleFunc("/spz-exists", spz_exists)
 	r.HandleFunc("/get-technicians", get_technicians)
+	r.HandleFunc("/get-actual-user", get_actual_user)
+	r.HandleFunc("/create-new-tech-record", create_new_tech_record)
 
 	db.InitDB()
 

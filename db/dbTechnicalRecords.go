@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 )
 
@@ -15,6 +16,14 @@ type TechnicalRecord struct {
 	AuthorSurname string
 }
 
+type CreateTechnicalRecord struct {
+	SPZ       string
+	Date      string
+	FailureID int
+	Details   string
+	AuthorID  int
+}
+
 func GetTechnicalRecords() []TechnicalRecord {
 	query := `SELECT tz.spz_vozidla, tz.datum, tz.zavada, tz.popis, t.user, t.jmeno, t.prijmeni FROM tech_zaznamy tz
 			  JOIN technici t ON tz.autor=t.user;`
@@ -22,10 +31,15 @@ func GetTechnicalRecords() []TechnicalRecord {
 	rows, err := db.Query(query)
 
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("GetTechnicalRecords: " + err.Error())
 	}
 
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal("ROWS: " + err.Error())
+		}
+	}(rows)
 
 	var technicalRecords []TechnicalRecord
 	var technicalRecord TechnicalRecord
@@ -55,4 +69,16 @@ func GetTechnicalRecords() []TechnicalRecord {
 		log.Fatal(err)
 	}
 	return technicalRecords
+}
+
+func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) {
+	fmt.Println(techRecord)
+	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada, popis, autor) VALUES
+                                                                        (?, ?, ?, ?, ?);`
+
+	_, err := db.Exec(query, techRecord.SPZ, techRecord.Date, techRecord.FailureID, techRecord.Details, techRecord.AuthorID)
+
+	if err != nil {
+		log.Fatal("CreateNewTechnicalRecord: " + err.Error())
+	}
 }

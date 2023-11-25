@@ -180,9 +180,11 @@
 <script>
     let spzData = [];
     let failures = 0;
+    let failuresIDs = [];
     let valid = false;
     let validDate = false;
     let validDetails = false;
+    let userID = 0;
 
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
@@ -190,28 +192,81 @@
     }
 
     function closePopup() {
+        clearInputs()
         document.getElementById('popup').style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
+    }
+
+    function clearInputs() {
+        document.getElementById('spzInput').value = ''
+        document.getElementById('dateInput').value = ''
+        document.getElementById('detailsInput').value = ''
+        document.getElementById("failure-table-body").innerHTML = ''
+        document.getElementById("spzInputStatus").innerHTML = "❌"
+        document.getElementById("dateInputStatus").innerHTML = "❌"
+        document.getElementById("detailsInputStatus").innerHTML = "❌"
     }
 
     function create() {
         spz = document.getElementById("spzInput").value
         date = document.getElementById("dateInput").value
         details = document.getElementById("detailsInput").value
+        $.ajax({
+            method: "GET",
+            url: "/get-actual-user",
+            success: function(response) {
+                console.log(response)
+                userID = response["ID"]
+                console.log(response["ID"])
 
-        var i = 0
+                var i = 0
+                var assignedFailures = []
 
-        while (i < failures) {
-            var val = document.getElementById('ch' + i).checked
-            console.log("Checkbox" + i + ": " + val)
-            i++
-        }
 
-        console.log("SPZ: " + spz)
-        console.log("Date: " + date)
-        console.log("Details: " + details)
-        document.getElementById('popup').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
+                while (i < failures) {
+                    var val = document.getElementById('ch' + i).checked
+                    console.log("Checkbox" + i + ": " + val)
+                    if (val === true) {
+                        assignedFailures.push(failuresIDs[i])
+                    }
+                    i++
+                }
+
+                console.log("SPZ: " + spz)
+                console.log("Date: " + date)
+                console.log("Details: " + details)
+                console.log("AssignedFailures: " + assignedFailures)
+
+                $(document).ready(function () {
+                    var requestData = {
+                        SPZ: spz,
+                        Date: date,
+                        FailureID : assignedFailures[0],
+                        Details : details,
+                        AuthorID : userID,
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/create-new-tech-record",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(requestData),
+                        success: function (response) {
+                            console.log("Response from Go server:", response);
+                        },
+                        error: function (error) {
+                            console.error("Error:", error);
+                        }
+                    });
+                });
+                clearInputs()
+                document.getElementById('popup').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            },
+            error: function() {
+                console.log("ERROR")
+            }
+        });
     }
 
     function fetchData() {
@@ -300,8 +355,10 @@
                 } else {
                     resizePopupToContent(response.length)
                     failures = response.length
+                    failuresIDs = []
                     var index = 0
                     response.forEach(function (item) {
+                        failuresIDs.push(item["FailureID"])
                         var row = tableBody.insertRow()
 
                         var cellDetails = row.insertCell()

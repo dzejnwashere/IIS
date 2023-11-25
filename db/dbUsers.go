@@ -4,6 +4,7 @@ import (
 	"IIS/typedef"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type User struct {
@@ -42,8 +43,10 @@ func GetAllUsers() []User {
 }
 
 func GetPermissions(userID int64) int64 {
+	fmt.Println("given userID:" + strconv.FormatInt(userID, 10))
 	var perm int64
 	err := db.QueryRow(`SELECT permissions FROM users WHERE id = ?`, userID).Scan(&perm)
+	fmt.Println("SCANED:" + strconv.FormatInt(perm, 10))
 	if err != nil {
 		fmt.Printf("db.GetPermissions error: %s", err.Error())
 		return 0
@@ -70,6 +73,7 @@ func GetUsername(id int64) (string, error) {
 	return username, nil
 }
 
+// 10000
 // With id < 0, create a new user. Returns id of user
 func CreateOrUpdateUser(id int, username string, passHash string, permission ...typedef.Permission) (int64, error) {
 	permInt := 0

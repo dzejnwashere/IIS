@@ -89,7 +89,8 @@
     </script>
 </head>
 <body>
-<h2>Failures 🚎</h2><br>
+
+<h2>Závady 🚎</h2><br>
 
 <select name="failures" id="failures">
     <option value="all">All</option>
@@ -102,12 +103,12 @@
     <tr>
         <th>ID</th>
         <th>SPZ</th>
-        <th>Author</th>
-        <th>Technician</th>
-        <th>Description</th>
-        <th>State</th>
-        <th>Edit</th>
-        <th>Done</th>
+        <th>Autor</th>
+        <th>Technik</th>
+        <th>Popis</th>
+        <th>Stav</th>
+        <th>Upravit</th>
+        <th>Vyřešeno</th>
     </tr>
 
     {{range .}}
@@ -169,7 +170,7 @@
 <button class="create-failure" onclick="openPopupFailures()">➕</button>
 
 <div id="popup" class="popup-container">
-    <p>Create new failure</p>
+    <p>Vytvoriť novú závadu</p>
     <div class="popup-row">
         <label for="spzInput">SPZ:</label>
         <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
@@ -179,19 +180,19 @@
     </div>
 
     <div class="popup-row">
-        <label for="technicianInput">Technician:</label>
+        <label for="technicianInput">Technik:</label>
         <select id="technicianInput">
 
         </select>
     </div>
 
     <div class="popup-row">
-        <label for="descriptionInput">Description:</label><br>
+        <label for="descriptionInput">Popis:</label><br>
         <textarea id="descriptionInput" placeholder="TODO"></textarea>
     </div>
 
     <div class="popup-row">
-        <label for="stateInput">State:</label>
+        <label for="stateInput">Současný stav:</label>
         <select>
             <option value="Přideleno">Přideleno</option>
             <option value="vreseni">V řešení</option>
@@ -200,8 +201,8 @@
         </select>
     </div>
 
-    <button onclick="closePopupFailures()">Close</button>
-    <button id="create-btn" onclick="create()">Create</button>
+    <button onclick="closePopupFailures()">Zrušit</button>
+    <button id="create-btn" onclick="create()">Vytvoriť závadu</button>
 </div>
 
 <div id="overlay" class="overlay"></div>

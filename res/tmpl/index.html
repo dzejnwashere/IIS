@@ -2,41 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>DPMM</title>
 
     <style>
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px;
+            background-color: #D22B2B;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav li {
+            margin-right: 15px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+        }
+
+        h2 {
+            text-align: center;
+            color: #D22B2B;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        .center-container label,
+        .center-container input {
+            text-align: center;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .logo {
+            max-width: 70px;
+            height: auto;
+        }
+
         .container {
             position: relative;
             width: 100%;
-            height: 60vh;
+            height: 40vh;
             background: url('https://images.unsplash.com/photo-1606937779333-177b3a4d63db?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }
+
+        .actuality, .jizdne {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 20px;
+        }
+
+        .actuality-container, .jizdne-container {
+            text-align: center;
+        }
+
+        .actuality img, .jizdne img{
+            width: auto;
+            height: 300px;
+            border-radius: 10px;
+        }
+
     </style>
 
 </head>
 <body>
 
-
-{{if not .LoggedIn}}<a href="/login">Login</a>{{end}}
-{{if .Admin}}<a href="/usrmngmt">User management</a>{{end}} <br>
-{{if .Admin}}<a href="/failures">Failures</a>{{end}} <br>
-{{if .Admin}}<a href="/technical-records">Technical Records</a>{{end}} <br>
-{{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Logout</a>{{end}}
-
+<header>
+    <img class="logo" src="https://cdn.discordapp.com/attachments/423562616951144448/1177927606549618718/DPMM2.png?ex=65744992&is=6561d492&hm=b2f25ad39311dcb2c4fedf3ad667dce83bf10378c1868468415e9480638314ac&" alt="DPMM">
+    <nav>
+        <ul>
+            <li>{{if not .LoggedIn}}<a href="/login">Přihlásit se</a>{{end}}</li>
+            <li>{{if .Admin}}<a href="/usrmngmt">Správa uživatelů</a>{{end}} <br></li>
+            <li>{{if .Admin}}<a href="/failures">Závady</a>{{end}} <br></li>
+            <li>{{if .Admin}}<a href="/technical-records">Technické záznamy</a>{{end}} <br></li>
+            <li>{{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Odhlásit</a>{{end}}</li>
+        </ul>
+    </nav>
+</header>
 
 <div class="container">
-    <input type="text" list="stopSuggestions1" class="text-field" placeholder="Začiatok cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')"><br>
+    <input type="text" list="stopSuggestions1" class="text-field" placeholder="Začátek cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')"><br>
     <datalist id="stopSuggestions1">
     </datalist>
-    <input type="text" list="stopSuggestions2" class="text-field" placeholder="Koniec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
+    <input type="text" list="stopSuggestions2" class="text-field" placeholder="Konec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
     <datalist id="stopSuggestions2">
     </datalist>
-    <button>Search 🔍</button>
+    <button>Vyhledat spojení 🔍</button>
 </div>
+
+<h2>Jízdné</h2>
+<div class="jizdne-container">
+
+    <div class="jizdne">
+        <img src="https://images.unsplash.com/photo-1611697930634-21fa66dd0e6a?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Actuality Image 3">
+        <h3>Jednorázové jízdenky</h3>
+    </div>
+
+
+    <div class="jizdne">
+        <img src="https://images.unsplash.com/photo-1485712207830-8a665e701494?q=80&w=1930&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Actuality Image 2">
+        <h3>SMS jízdenka</h3>
+    </div>
+
+    <div class="jizdne">
+        <img src="https://images.unsplash.com/photo-1531270279937-aca3e712ad01?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Actuality Image 1">
+        <h3>Predplatní jízdenky</h3>
+    </div>
+</div>
+
+<h2>Aktuality</h2>
+<div class="actuality-container">
+<div class="actuality">
+    <img src="https://www.ludiapremalacky.sk/files/2017_%C4%8Dl%C3%A1nky_SEP/mhd_malacky.png" alt="Actuality Image 1">
+        <h3>MHD – Městská hromadná doprava Malacky</h3>
+        <p>Text for Actuality 1...</p>
+    </div>
+
+    <div class="actuality">
+        <img src="https://malacky.sk/wp-content/uploads/2022/08/verejna-doprava.jpg" alt="Actuality Image 2">
+        <h3>Běžné meziměstské autobusové linky</h3>
+        <p>Text for Actuality 2...</p>
+    </div>
+
+    <div class="actuality">
+        <img src="https://cdn.sita.sk/sites/32/2012/01/vlak-lucia.jpg" alt="Actuality Image 3">
+        <h3>Vlakové spojení Břeclav – Kúty – Bratislava</h3>
+        <p>Text for Actuality 3...</p>
+    </div>
+</div>
+
+<h2>Odběr newsletteru</h2>
+<div class="center-container">
+    <label for="email">Váš e-mail:</label>
+    <input type="email" id="email" name="email"><br>
+    <input type="submit" value="💌 Přihlásit se k odběru.">
+</div>
+
 
 <script>
     let stopData = [];

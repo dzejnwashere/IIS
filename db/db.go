@@ -97,6 +97,22 @@ func InitDB() {
 		}
 		passHash, _ := bcrypt.GenerateFromPassword([]byte("admin"), 10)
 		CreateOrUpdateUser(-1, "admin", string(passHash), typedef.AdminPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("spravce"), 10)
+		CreateOrUpdateUser(-1, "spravce", string(passHash), typedef.SpravcePerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("dispecer"), 10)
+		CreateOrUpdateUser(-1, "dispecer", string(passHash), typedef.DispecerPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("ridic"), 10)
+		CreateOrUpdateUser(-1, "ridic", string(passHash), typedef.RidicPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("technik"), 10)
+		CreateOrUpdateUser(-1, "technik", string(passHash), typedef.TechnikPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("mixed"), 10)
+		CreateOrUpdateUser(-1, "mixed", string(passHash), typedef.DispecerPerm)
+		UpdatePermissions(6, 10)
 	}
 
 	optionallyCreateTable := func(name string, ver int64, stmt string) {

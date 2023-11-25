@@ -4,17 +4,24 @@ import (
 	"IIS/typedef"
 	"fmt"
 	"log"
-	"strconv"
 )
 
 type User struct {
 	ID          int
 	Username    string
+	Name        string
+	Surname     string
 	Permissions int
 }
 
+type UserData struct {
+	ID      int
+	Name    string
+	Surname string
+}
+
 func GetAllUsers() []User {
-	query := `SELECT id, username, permissions FROM users;`
+	query := `SELECT id, username, name, surname, permissions FROM users;`
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -22,18 +29,15 @@ func GetAllUsers() []User {
 
 	defer rows.Close()
 
+	var user User
 	var users []User
-	var id int
-	var username string
-	var permissions int
 
 	for rows.Next() {
-		err := rows.Scan(&id, &username, &permissions)
+		err := rows.Scan(&user.ID, &user.Username, &user.Name, &user.Surname, &user.Permissions)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(id, username, permissions)
-		users = append(users, User{ID: id, Username: username, Permissions: permissions})
+		users = append(users, user)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -43,10 +47,8 @@ func GetAllUsers() []User {
 }
 
 func GetPermissions(userID int64) int64 {
-	fmt.Println("given userID:" + strconv.FormatInt(userID, 10))
 	var perm int64
 	err := db.QueryRow(`SELECT permissions FROM users WHERE id = ?`, userID).Scan(&perm)
-	fmt.Println("SCANED:" + strconv.FormatInt(perm, 10))
 	if err != nil {
 		fmt.Printf("db.GetPermissions error: %s", err.Error())
 		return 0
@@ -73,21 +75,20 @@ func GetUsername(id int64) (string, error) {
 	return username, nil
 }
 
-// 10000
 // With id < 0, create a new user. Returns id of user
-func CreateOrUpdateUser(id int, username string, passHash string, permission ...typedef.Permission) (int64, error) {
+func CreateOrUpdateUser(id int, username string, passHash string, name string, surname string, permission ...typedef.Permission) (int64, error) {
 	permInt := 0
 	for _, a := range permission {
 		permInt = permInt | (1 << a)
 	}
 	if id < 0 {
-		res, err := db.Exec(`INSERT INTO users (username, password, permissions) VALUES (?, ?, ?)`, username, passHash, permInt)
+		res, err := db.Exec(`INSERT INTO users (username, password, name, surname, permissions) VALUES (?, ?, ?, ?, ?)`, username, passHash, name, surname, permInt)
 		if err != nil {
 			return 0, err
 		}
 		return res.LastInsertId()
 	} else {
-		_, err := db.Exec(`UPDATE users SET username = ?, password = ?, permissions = ? WHERE id = ?`, username, passHash, permInt, id)
+		_, err := db.Exec(`UPDATE users SET username = ?, password = ?, name = ?, surname = ?, permissions = ? WHERE id = ?`, username, passHash, name, surname, permInt, id)
 		return int64(id), err
 	}
 }
@@ -104,4 +105,16 @@ func RemoveUser(userID int) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+func GetUser(userID int64) UserData {
+	query := `SELECT id, name, surname FROM users WHERE id = ?;`
+
+	var userData UserData
+	err := db.QueryRow(query, userID).Scan(&userData.ID, &userData.Name, &userData.Surname)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	return userData
 }

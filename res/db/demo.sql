@@ -1,13 +1,7 @@
 
 START TRANSACTION ;
 
-INSERT INTO spravci (jmeno, prijmeni, user) VALUES ("Jožko", "Mrkvička", 2);
 
-INSERT INTO technici (jmeno, prijmeni, user) VALUES ("Janko", "Hraško", 5);
-
-INSERT INTO ridici (jmeno, prijmeni, user) VALUES ("Ja", "Neviemuš", 4), ("nas", "mixo", 6);
-
-INSERT INTO dispeceri (jmeno, prijmeni, user) VALUES ("Disp", "Ečer", 3), ("nas", "mixo", 6);
 
 INSERT INTO zastavky (nazov_zastavky) VALUES
                                           ('Štadión'),
@@ -85,9 +79,10 @@ INSERT INTO vozy (spz, druh, znacka, kapacita) VALUES
                                                    ('MA103QQ', 'trolejbus', 'SOR', 68);
 
 INSERT INTO stav_zavady (stav) VALUES
-                                   ('Vyřešeno'),
+                                   ('Přideleno'),
                                    ('V řešení'),
-                                   ('Pozastaveno');
+                                   ('Pozastaveno'),
+                                   ('Vyřešeno');
 
 INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
                                                           ('MA018DE', 2, 5, 'defekt', 1),

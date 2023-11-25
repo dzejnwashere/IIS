@@ -5,17 +5,11 @@ import (
 	"log"
 )
 
-type Technician struct {
-	ID      int
-	Name    string
-	Surname string
-}
+func GetTechnicians() []UserData {
+	var technician UserData
+	var technicians []UserData
 
-func GetTechnicians() []Technician {
-	var technician Technician
-	var technicians []Technician
-
-	query := `SELECT user, jmeno, prijmeni FROM technici;`
+	query := `SELECT id, name, surname FROM users WHERE (permissions & 4) <> 0`
 
 	rows, err := db.Query(query)
 
@@ -36,10 +30,10 @@ func GetTechnicians() []Technician {
 	return technicians
 }
 
-func GetTechnician(userID int64) Technician {
-	var technician Technician
+func GetTechnician(userID int64) UserData {
+	var technician UserData
 
-	query := `SELECT user, jmeno, prijmeni FROM technici WHERE user=?;`
+	query := `SELECT id, name, surname FROM users WHERE (permissions & 4) <> 0 AND id = ?`
 
 	err := db.QueryRow(query, userID).Scan(&technician.ID, &technician.Name, &technician.Surname)
 	if err != nil {

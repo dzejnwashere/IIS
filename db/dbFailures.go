@@ -1,6 +1,9 @@
 package db
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 type Failure struct {
 	FailureID         int
@@ -15,10 +18,18 @@ type Failure struct {
 	AuthorSurname     string
 }
 
+type CreateFailure struct {
+	SPZ          string
+	AuthorID     int
+	TechnicianID int
+	Description  string
+	State        int
+}
+
 func GetFailures() []Failure {
-	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
-			  JOIN spravci s ON z.autor=s.user
-			  JOIN technici t ON z.technik=t.user
+	query := `SELECT z.id, z.SPZ, z.popis, t.id, t.name, t.surname, sz.stav, s.id, s.name, s.surname FROM zavady z
+			  JOIN users s ON z.autor=s.id
+			  JOIN users t ON z.technik=t.id
 			  JOIN stav_zavady sz ON z.stav=sz.id;`
 
 	rows, err := db.Query(query)
@@ -50,9 +61,9 @@ func GetFailures() []Failure {
 func GetFailureById(id int) Failure {
 	var fail Failure
 
-	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
-				JOIN spravci s ON z.autor=s.user
-			  	JOIN technici t ON z.technik=t.user
+	query := `SELECT z.id, z.SPZ, z.popis, t.id, t.name, t.surname, sz.stav, s.id, s.name, s.surname FROM zavady z
+				JOIN users s ON z.autor=s.id
+			  	JOIN users t ON z.technik=t.id
 			  	JOIN stav_zavady sz ON z.stav=sz.id
 			  WHERE z.id = ?;`
 
@@ -66,9 +77,9 @@ func GetFailureById(id int) Failure {
 }
 
 func GetFailuresForSpecificSPZWithSpecificState(SPZ string, state int) []Failure {
-	query := `SELECT z.id, z.SPZ, z.popis, t.user, t.jmeno, t.prijmeni, sz.stav, s.id, s.jmeno, s.prijmeni FROM zavady z
-			  JOIN spravci s ON z.autor=s.user
-			  JOIN technici t ON z.technik=t.user
+	query := `SELECT z.id, z.SPZ, z.popis, t.id, t.name, t.surname, sz.stav, s.id, s.name, s.surname FROM zavady z
+			  JOIN users s ON z.autor=s.id
+			  JOIN users t ON z.technik=t.id
 			  JOIN stav_zavady sz ON z.stav=sz.id
             WHERE sz.id = ? AND z.SPZ = ?;`
 
@@ -97,4 +108,16 @@ func GetFailuresForSpecificSPZWithSpecificState(SPZ string, state int) []Failure
 		log.Fatal(err)
 	}
 	return failures
+}
+
+func CreateNewFailure(failure CreateFailure) {
+	fmt.Println(failure)
+	query := `INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
+                                                                        (?, ?, ?, ?, ?);`
+
+	_, err := db.Exec(query, failure.SPZ, failure.AuthorID, failure.TechnicianID, failure.Description, failure.State)
+
+	if err != nil {
+		log.Fatal("CreateNewFailure: " + err.Error())
+	}
 }

@@ -17,16 +17,19 @@ type TechnicalRecord struct {
 }
 
 type CreateTechnicalRecord struct {
-	SPZ       string
-	Date      string
-	FailureID int
-	Details   string
-	AuthorID  int
+	SPZ                string
+	Date               string
+	FailureID          int
+	FailureDescription string
+	Details            string
+	AuthorID           int
+	AuthorName         string
+	AuthorSurname      string
 }
 
 func GetTechnicalRecords() []TechnicalRecord {
-	query := `SELECT tz.spz_vozidla, tz.datum, tz.zavada, tz.popis, t.user, t.jmeno, t.prijmeni FROM tech_zaznamy tz
-			  JOIN technici t ON tz.autor=t.user;`
+	query := `SELECT tz.spz_vozidla, tz.datum, tz.zavada, tz.popis, t.id, t.name, t.surname FROM tech_zaznamy tz
+			  JOIN users t ON tz.autor=t.id;`
 
 	rows, err := db.Query(query)
 
@@ -71,7 +74,7 @@ func GetTechnicalRecords() []TechnicalRecord {
 	return technicalRecords
 }
 
-func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) {
+func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) CreateTechnicalRecord {
 	fmt.Println(techRecord)
 	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada, popis, autor) VALUES
                                                                         (?, ?, ?, ?, ?);`
@@ -81,4 +84,5 @@ func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) {
 	if err != nil {
 		log.Fatal("CreateNewTechnicalRecord: " + err.Error())
 	}
+	return techRecord
 }

@@ -91,51 +91,34 @@
 </select>
 
 <table id="technical-records">
-    <tr>
-        <th>SPZ</th>
-        <th>Date</th>
-        <th>Failure</th>
-        <th>Details</th>
-        <th>AuthorName</th>
-        <th>AuthorSurname</th>
-    </tr>
-
-    {{range .}}
-        <tr id="tech-record{{.SPZ}}{{.Date}}">
-            <td id="spz{{.SPZ}}{{.Date}}">{{.SPZ}}</td>
-            <td id="date{{.SPZ}}{{.Date}}">{{.Date}}</td>
-            {{if eq .Failure.FailureID 0}}
-                <td id="failureID{{.SPZ}}{{.Date}}">None</td>
-            {{else}}
-                <td id="failureID{{.SPZ}}{{.Date}}">{{.Failure.Description}}</td>
-            {{end}}
-            <td id="details{{.SPZ}}{{.Date}}">{{.Details}}</td>
-            <td id="author-name{{.SPZ}}{{.Date}}">{{.AuthorName}}</td>
-            <td id="author-surname{{.SPZ}}{{.Date}}">{{.AuthorSurname}}</td>
+    <thead>
+        <tr>
+            <th>SPZ</th>
+            <th>Date</th>
+            <th>Failure</th>
+            <th>Details</th>
+            <th>AuthorName</th>
+            <th>AuthorSurname</th>
         </tr>
-
-        <script>
-            function editFail(id) {
-                document.getElementById("edit" + id).onclick = function() {
-
-                    var failureID = document.getElementById("failureID" + id);
-                    var spz = document.getElementById("spz" + id);
-                    var authorSurname = document.getElementById("authorSurname" + id);
-                    var technicianSurname = document.getElementById("technicianSurname" + id);
-                    var description = document.getElementById("description" + id);
-                    var state = document.getElementById("state" + id);
-
-                    failureID.innerHTML = '<input type="text" value="' + failureID.innerHTML + '">';
-                    spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
-                    authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
-                    technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
-                    description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
-                    state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
-                };
-            }
-        </script>
-    {{end}}
+    </thead>
+    <tbody id="tech-records-tbody">
+        {{range .}}
+            <tr id="tech-record{{.SPZ}}{{.Date}}">
+                <td id="spz{{.SPZ}}{{.Date}}">{{.SPZ}}</td>
+                <td id="date{{.SPZ}}{{.Date}}">{{.Date}}</td>
+                {{if eq .Failure.FailureID 0}}
+                    <td id="failureID{{.SPZ}}{{.Date}}">None</td>
+                {{else}}
+                    <td id="failureID{{.SPZ}}{{.Date}}">{{.Failure.Description}}</td>
+                {{end}}
+                <td id="details{{.SPZ}}{{.Date}}">{{.Details}}</td>
+                <td id="author-name{{.SPZ}}{{.Date}}">{{.AuthorName}}</td>
+                <td id="author-surname{{.SPZ}}{{.Date}}">{{.AuthorSurname}}</td>
+            </tr>
+        {{end}}
+    </tbody>
 </table>
+<br>
 
 <button class="create-tech-record" onclick="openPopup()">➕</button>
 
@@ -181,10 +164,13 @@
     let spzData = [];
     let failures = 0;
     let failuresIDs = [];
+    let fails = [];
     let valid = false;
     let validDate = false;
     let validDetails = false;
     let userID = 0;
+    let userName = "";
+    let userSurname = "";
 
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
@@ -215,12 +201,13 @@
             method: "GET",
             url: "/get-actual-user",
             success: function(response) {
-                console.log(response)
                 userID = response["ID"]
-                console.log(response["ID"])
+                userName = response["Name"]
+                userSurname = response["Surname"]
 
                 var i = 0
                 var assignedFailures = []
+                var assignedFailuresDetails = []
 
 
                 while (i < failures) {
@@ -228,6 +215,7 @@
                     console.log("Checkbox" + i + ": " + val)
                     if (val === true) {
                         assignedFailures.push(failuresIDs[i])
+                        assignedFailuresDetails.push(fails[i])
                     }
                     i++
                 }
@@ -242,8 +230,11 @@
                         SPZ: spz,
                         Date: date,
                         FailureID : assignedFailures[0],
+                        FailureDescription : assignedFailuresDetails[0],
                         Details : details,
                         AuthorID : userID,
+                        AuthorName : userName,
+                        AuthorSurname : userSurname,
                     };
 
                     $.ajax({
@@ -253,6 +244,7 @@
                         data: JSON.stringify(requestData),
                         success: function (response) {
                             console.log("Response from Go server:", response);
+                            updateTable(response)
                         },
                         error: function (error) {
                             console.error("Error:", error);
@@ -344,6 +336,7 @@
     function getFailuresForVehicle(SPZ) {
         var tableBody = document.getElementById("failure-table-body");
         tableBody.innerHTML = '';
+
         $.ajax({
             method: "GET",
             url: "/get-specific-failures-state",
@@ -356,9 +349,11 @@
                     resizePopupToContent(response.length)
                     failures = response.length
                     failuresIDs = []
+                    fails = []
                     var index = 0
                     response.forEach(function (item) {
                         failuresIDs.push(item["FailureID"])
+                        fails.push(item["Description"])
                         var row = tableBody.insertRow()
 
                         var cellDetails = row.insertCell()
@@ -384,6 +379,32 @@
         let popup = document.getElementById('popup');
         let pixels = 450 + rows * 40
         popup.style.height = pixels.toString() + 'px';
+    }
+
+    function updateTable(data) {
+        var tableBody = document.getElementById("tech-records-tbody")
+        var row = tableBody.insertRow()
+
+        var cellSPZ = row.insertCell()
+        cellSPZ.textContent = data["SPZ"]
+
+        var cellDate = row.insertCell()
+        cellDate.textContent = data["Date"]
+
+        var cellFailure = row.insertCell()
+        if (data["FailureDescription"] === null) {
+            cellFailure.textContent = "None"
+        } else {
+            cellFailure.textContent = data["FailureDescription"]
+        }
+        var cellDetails = row.insertCell()
+        cellDetails.textContent = data["Details"]
+
+        var cellAuthorName = row.insertCell()
+        cellAuthorName.textContent = data["AuthorName"]
+
+        var cellAuthorSurname = row.insertCell()
+        cellAuthorSurname.textContent = data["AuthorSurname"]
     }
 
     fetchData();

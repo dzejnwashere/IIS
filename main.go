@@ -251,16 +251,7 @@ func get_technicians(writer http.ResponseWriter, request *http.Request) {
 
 func get_actual_user(writer http.ResponseWriter, request *http.Request) {
 	userID := auth.GetUserId(request)
-	fmt.Println("RECEIVED: " + strconv.FormatInt(userID, 10))
-	permissions := db.GetPermissions(userID)
-	var user db.Technician
-	fmt.Println(userID)
-	fmt.Println(permissions)
-	if (permissions & 4) > 0 {
-		fmt.Println("TRUE")
-		user = db.GetTechnician(userID)
-	}
-
+	user := db.GetUser(userID)
 	userJSON, err := json.Marshal(user)
 
 	if err != nil {
@@ -288,13 +279,56 @@ func create_new_tech_record(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			db.CreateNewTechnicalRecord(techRecord)
+			responseData := db.CreateNewTechnicalRecord(techRecord)
+
+			responseDataJSON, err := json.Marshal(responseData)
+
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(responseDataJSON)
+
 		} else {
 			http.Error(writer, "Bad permissions", http.StatusNetworkAuthenticationRequired)
 			return
 		}
 	}
 
+}
+
+func create_new_failure(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPost {
+		userID := auth.GetUserId(request)
+		perms := db.GetPermissions(userID)
+
+		if ((perms & 16) > 0) || ((perms & 1) > 0) {
+			decoder := json.NewDecoder(request.Body)
+
+			var failure db.CreateFailure
+
+			err := decoder.Decode(&failure)
+			if err != nil {
+				http.Error(writer, "Invalid request body", http.StatusBadRequest)
+				return
+			}
+
+			db.CreateNewFailure(failure)
+		} else {
+			http.Error(writer, "Bad permissions", http.StatusNetworkAuthenticationRequired)
+			return
+		}
+	}
+
+}
+
+func sms(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/sms.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, nil)
+	if err != nil {
+		return
+	}
 }
 
 func main() {
@@ -321,6 +355,8 @@ func main() {
 	r.HandleFunc("/get-technicians", get_technicians)
 	r.HandleFunc("/get-actual-user", get_actual_user)
 	r.HandleFunc("/create-new-tech-record", create_new_tech_record)
+	r.HandleFunc("/create-new-failure", create_new_failure)
+	r.HandleFunc("/sms", sms)
 
 	db.InitDB()
 

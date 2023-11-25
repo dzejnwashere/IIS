@@ -93,10 +93,11 @@
 <h2>Závady 🚎</h2><br>
 
 <select name="failures" id="failures">
-    <option value="all">All</option>
-    <option value="tbd">To be done</option>
-    <option value="wip">Work in progress</option>
-    <option value="done">Done</option>
+    <option value="vsechny">Všechny</option>
+    <option value="prideleno">Přideleno</option>
+    <option value="vreseni">V řešení</option>
+    <option value="pozastaveno">Pozastaveno</option>
+    <option value="vyreseno">Vyřešeno</option>
 </select>
 
 <table id="table-zavady">
@@ -125,14 +126,14 @@
 
         <script>
 
-            document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
+            /*document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
                 editFail(id);
                 //zmenit text na buttone na ✅
             }
 
             document.getElementById("doneFail" + {{.FailureID}}).onclick = function() {
                 doneFail(id);
-            }
+            }*/
 
             function doneFail(id) {
                 //change state to "Vyřešeno" v DB
@@ -170,10 +171,10 @@
 <button class="create-failure" onclick="openPopupFailures()">➕</button>
 
 <div id="popup" class="popup-container">
-    <p>Vytvoriť novú závadu</p>
+    <p>Vytvořit novú závadu</p>
     <div class="popup-row">
         <label for="spzInput">SPZ:</label>
-        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Enter vehicle SPZ" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
         <datalist id="spzSuggestions">
         </datalist>
         <label for="spzInput" id="spzInputStatus">❌</label>
@@ -188,16 +189,16 @@
 
     <div class="popup-row">
         <label for="descriptionInput">Popis:</label><br>
-        <textarea id="descriptionInput" placeholder="TODO"></textarea>
+        <textarea id="descriptionInput"></textarea>
     </div>
 
     <div class="popup-row">
         <label for="stateInput">Současný stav:</label>
-        <select>
-            <option value="Přideleno">Přideleno</option>
-            <option value="vreseni">V řešení</option>
-            <option value="pozastaveno">Pozastaveno</option>
-            <option value="vyreseno">Vyřešeno</option>
+        <select id="stateInput">
+            <option value="1">Přideleno</option>
+            <option value="2">V řešení</option>
+            <option value="3">Pozastaveno</option>
+            <option value="4">Vyřešeno</option>
         </select>
     </div>
 
@@ -210,6 +211,9 @@
 <script>
     let spzData = [];
     let technicianData = [];
+    let userID = 0;
+    let userName = "";
+    let userSurname = "";
 
     function openPopupFailures() {
         document.getElementById('popup').style.display = 'block';
@@ -217,11 +221,11 @@
         select = document.getElementById('technicianInput')
         var index = 0
         technicianData.forEach(function (technician) {
-            console.log(index)
+            console.log(index);
             var option = document.createElement('option')
-            option.value = technician["Name"] + " " + technician["Surname"]
+            option.value = technician["ID"]
             option.innerHTML = technician["Name"] + " " + technician["Surname"]
-            select.appendChild(option)
+            select.appendChild(option);
             index++
         })
     }
@@ -233,14 +237,56 @@
 
     function create() {
         spz = document.getElementById("spzInput").value
-        date = document.getElementById("dateInput").value
-        details = document.getElementById("detailsInput").value
+        technicianID = document.getElementById("technicianInput").value
+        description = document.getElementById("descriptionInput").value
+        state = document.getElementById("stateInput").value
+        console.log(spz)
+        $.ajax({
+            method: "GET",
+            url: "/get-actual-user",
+            success: function(response) {
+                userID = response["ID"]
+                userName = response["Name"]
+                userSurname = response["Surname"]
 
-        console.log("SPZ: " + spz)
-        console.log("Date: " + date)
-        console.log("Details: " + details)
-        document.getElementById('popup').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
+                $(document).ready(function () {
+                    var requestData = {
+                        SPZ: spz,
+                        AuthorID : userID,
+                        TechnicianID: technicianID,
+                        Description: description,
+                        State: state,
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/create-new-failure",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(requestData),
+                        success: function (response) {
+                            console.log("Response from Go server:", response);
+                        },
+                        error: function (error) {
+                            console.error("Error:", error);
+                        }
+                    });
+                });
+                clearInputs()
+                document.getElementById('popup').style.display = 'none';
+                document.getElementById('overlay').style.display = 'none';
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
+
+    }
+
+    function clearInputs() {
+        document.getElementById("spzInput").value = '';
+        document.getElementById("technicianInput").value = '';
+        document.getElementById("descriptionInput").value = '';
+        document.getElementById("stateInput").value = '';
     }
 
     function fetchData() {
@@ -278,13 +324,13 @@
             data: { SPZ: input },
             success: function(response) {
                 if(response === true) {
-                    document.getElementById("spzInputStatus").innerHTML = "✅"
+                    document.getElementById("spzInputStatus").innerHTML = "✅";
                 } else if(response === false) {
-                    document.getElementById("spzInputStatus").innerHTML = "❌"
+                    document.getElementById("spzInputStatus").innerHTML = "❌";
                 }
             },
             error: function() {
-                console.log("ERROR")
+                console.log("ERROR");
             }
         });
     }
@@ -299,7 +345,7 @@
         fetch('/get-technicians')
             .then(response => response.json())
             .then(data => {
-                technicianData = data
+                technicianData = data;
             })
             .catch(error => {
                 console.error('Error fetching data:', error);

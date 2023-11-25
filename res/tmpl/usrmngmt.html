@@ -50,18 +50,22 @@
     <tr>
         <th>ID</th>
         <th>User name</th>
-        <th>Admin 1</th>
-        <th>Driver 2</th>
-        <th>Technician 4</th>
-        <th>Dispatcher 8</th>
-        <th>Manager 16</th>
-        <th>Edit</th>
-        <th>Delete</th>
+        <th>Jméno</th>
+        <th>Přijmení</th>
+        <th>Admin</th>
+        <th>Řidič</th>
+        <th>Technik</th>
+        <th>Dispečer</th>
+        <th>Manažér</th>
+        <th>Upraviť</th>
+        <th>Zmazať</th>
     </tr>
     {{range .}}
     <tr id="usr{{.ID}}">
         <td>{{.ID}}</td>
         <td>{{.Username}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Surname}}</td>
         <td><input type="checkbox" id="per{{.ID}}-admin" disabled="true"/></td>
         <td><input type="checkbox" id="per{{.ID}}-driver" disabled="true"/></td>
         <td><input type="checkbox" id="per{{.ID}}-technician" disabled="true"/></td>

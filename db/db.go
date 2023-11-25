@@ -88,6 +88,8 @@ func InitDB() {
 	   				id INT NOT NULL AUTO_INCREMENT,
 	   				username VARCHAR(20) NOT NULL,
 	   				password CHAR(80) NOT NULL,
+	   				name VARCHAR(20) NOT NULL,
+	   				surname VARCHAR(40) NOT NULL,
 	   				permissions int not null,
 	   				UNIQUE (username),
 	   				PRIMARY KEY (id)) comment="6" character set utf8mb4; `
@@ -95,24 +97,24 @@ func InitDB() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
 		passHash, _ := bcrypt.GenerateFromPassword([]byte("admin"), 10)
-		CreateOrUpdateUser(-1, "admin", string(passHash), typedef.AdminPerm)
+		CreateOrUpdateUser(-1, "admin", string(passHash), "Adam", "Mína", typedef.AdminPerm)
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("spravce"), 10)
-		CreateOrUpdateUser(-1, "spravce", string(passHash), typedef.SpravcePerm)
+		CreateOrUpdateUser(-1, "spravce", string(passHash), "Jožko", "Mrkvička", typedef.SpravcePerm)
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("dispecer"), 10)
-		CreateOrUpdateUser(-1, "dispecer", string(passHash), typedef.DispecerPerm)
+		CreateOrUpdateUser(-1, "dispecer", string(passHash), "Disp", "Ečer", typedef.DispecerPerm)
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("ridic"), 10)
-		CreateOrUpdateUser(-1, "ridic", string(passHash), typedef.RidicPerm)
+		CreateOrUpdateUser(-1, "ridic", string(passHash), "Ja", "Neviemuš", typedef.RidicPerm)
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("technik"), 10)
-		CreateOrUpdateUser(-1, "technik", string(passHash), typedef.TechnikPerm)
+		CreateOrUpdateUser(-1, "technik", string(passHash), "Janko", "Hraško", typedef.TechnikPerm)
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("mixed"), 10)
-		CreateOrUpdateUser(-1, "mixed", string(passHash), typedef.DispecerPerm)
-		UpdatePermissions(6, 10)
+		CreateOrUpdateUser(-1, "mixed", string(passHash), "Edo", "Mixal", typedef.DispecerPerm, typedef.RidicPerm)
 	}
 
 	optionallyCreateTable := func(name string, ver int64, stmt string) {
@@ -132,38 +134,6 @@ func InitDB() {
 			}
 		}
 	}
-
-	optionallyCreateTable("spravci", 6, `
-	   			CREATE TABLE spravci (
-	   				id INT AUTO_INCREMENT PRIMARY KEY,
-	       			jmeno VARCHAR(20),
-	       			prijmeni VARCHAR(30),
-	       			user INT,
-	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE CASCADE) character set utf8mb4;`)
-
-	optionallyCreateTable("technici", 6, `
-	   			CREATE TABLE technici (
-	   				id INT AUTO_INCREMENT PRIMARY KEY,
-	       			jmeno VARCHAR(20),
-	       			prijmeni VARCHAR(30),
-	       			user INT,
-	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE CASCADE) comment="6" character set utf8mb4;`)
-
-	optionallyCreateTable("dispeceri", 6, `
-	   			CREATE TABLE dispeceri (
-	   				id INT AUTO_INCREMENT PRIMARY KEY,
-	       			jmeno VARCHAR(20),
-	       			prijmeni VARCHAR(30),
-	       			user INT,
-	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE CASCADE) comment="6" character set utf8mb4;`)
-
-	optionallyCreateTable("ridici", 6, `
-	   			CREATE TABLE ridici (
-	   				id INT AUTO_INCREMENT PRIMARY KEY,
-	       			jmeno VARCHAR(20),
-	       			prijmeni VARCHAR(30),
-	       			user INT,
-	       			FOREIGN KEY (user) REFERENCES users(id) ON DELETE CASCADE ) comment="6" character set utf8mb4;`)
 
 	optionallyCreateTable("zastavky", 6, `
 	   			CREATE TABLE zastavky (
@@ -218,7 +188,7 @@ func InitDB() {
 	   			    popis VARCHAR(255),
 	   			    autor INT NOT NULL ,
 	   			    PRIMARY KEY (spz_vozidla, datum),
-	   			    FOREIGN KEY (autor) REFERENCES technici(user),
+	   			    FOREIGN KEY (autor) REFERENCES users(id),
 	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
 	   			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
 

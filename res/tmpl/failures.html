@@ -63,30 +63,6 @@
             color: white;
         }
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript">
-        function deleteUser(userID) {
-            // Add logic to handle delete action for the user with the specified ID
-            if (userID === 1) {
-                alert("You can't delete admin.");
-            } else {
-                alert("Delete user with ID: " + userID);
-                $.ajax({
-                    method: "GET",
-                    url: "/remove",
-                    data: { userID: userID },
-                    success: function(response) {
-                        alert("User with ID " + userID + " removed successfully!");
-                        // Update the table with the new data
-                        $('#usr'+userID).remove();
-                    },
-                    error: function() {
-                        alert("An error occurred while removing the user.");
-                    }
-                });
-            }
-        }
-    </script>
 </head>
 <body>
 
@@ -101,70 +77,72 @@
 </select>
 
 <table id="table-zavady">
-    <tr>
-        <th>ID</th>
-        <th>SPZ</th>
-        <th>Autor</th>
-        <th>Technik</th>
-        <th>Popis</th>
-        <th>Stav</th>
-        <th>Upravit</th>
-        <th>Vyřešeno</th>
-    </tr>
-
-    {{range .}}
-        <tr id="failure{{.FailureID}}">
-            <td id="failureID{{.FailureID}}">{{.FailureID}}</td>
-            <td id="spz{{.FailureID}}">{{.SPZ}}</td>
-            <td id="authorSurname{{.FailureID}}">{{.AuthorSurname}}</td>
-            <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
-            <td id="description{{.FailureID}}">{{.Description}}</td>
-            <td id="state{{.FailureID}}">{{.State}}</td>
-            <td><button class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
-            <td><button class="done-btn" onclick="doneFail({{.FailureID}})">✅</button></td>
+    <thead>
+        <tr>
+            <th>SPZ</th>
+            <th>Autor</th>
+            <th>Technik</th>
+            <th>Popis</th>
+            <th>Stav</th>
+            <th>Upravit</th>
+            <th>Vyřešeno</th>
         </tr>
+    </thead>
 
-        <script>
+    <tbody id="table-body">
+        {{range .}}
+            <tr id="failure{{.FailureID}}">
+                <td id="spz{{.FailureID}}">{{.SPZ}}</td>
+                <td id="authorSurname{{.FailureID}}">{{.AuthorSurname}}</td>
+                <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
+                <td id="description{{.FailureID}}">{{.Description}}</td>
+                <td id="state{{.FailureID}}">{{.State}}</td>
+                <td><button class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
+                <td><button class="done-btn" onclick="doneFail({{.FailureID}})">✅</button></td>
+            </tr>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+            <script>
 
-            /*document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
-                editFail(id);
-                //zmenit text na buttone na ✅
-            }
-
-            document.getElementById("doneFail" + {{.FailureID}}).onclick = function() {
-                doneFail(id);
-            }*/
-
-            function doneFail(id) {
-                //change state to "Vyřešeno" v DB
-            }
-
-            function editFail(id) {
-                var spz = document.getElementById("spz" + id);
-                var authorSurname = document.getElementById("authorSurname" + id);
-                var technicianSurname = document.getElementById("technicianSurname" + id);
-                var description = document.getElementById("description" + id);
-                var state = document.getElementById("state" + id);
-
-                spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
-                authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
-                technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
-                description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
-                state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
-
-                document.getElementById("editFail" + id).onclick = function() {
-                    changeEditState(id);
+                /*document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
+                    editFail(id);
+                    //zmenit text na buttone na ✅
                 }
-            }
 
-            function changeEditState(id){
-                //zmeniť hodnoty v db
-                //späť na default zobrazenie (bez textfieldu)
-            }
+                document.getElementById("doneFail" + {{.FailureID}}).onclick = function() {
+                    doneFail(id);
+                }*/
 
-        </script>
+                function doneFail(id) {
+                    //change state to "Vyřešeno" v DB
+                }
 
-    {{end}}
+                function editFail(id) {
+                    var spz = document.getElementById("spz" + id);
+                    var authorSurname = document.getElementById("authorSurname" + id);
+                    var technicianSurname = document.getElementById("technicianSurname" + id);
+                    var description = document.getElementById("description" + id);
+                    var state = document.getElementById("state" + id);
+
+                    spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
+                    authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
+                    technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
+                    description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
+                    state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
+
+                    document.getElementById("editFail" + id).onclick = function() {
+                        changeEditState(id);
+                    }
+                }
+
+                function changeEditState(id){
+                    //zmeniť hodnoty v db
+                    //späť na default zobrazenie (bez textfieldu)
+                }
+
+            </script>
+        {{end}}
+    </tbody>
+
 </table>
 <br>
 
@@ -195,10 +173,7 @@
     <div class="popup-row">
         <label for="stateInput">Současný stav:</label>
         <select id="stateInput">
-            <option value="1">Přideleno</option>
-            <option value="2">V řešení</option>
-            <option value="3">Pozastaveno</option>
-            <option value="4">Vyřešeno</option>
+
         </select>
     </div>
 
@@ -210,37 +185,33 @@
 
 <script>
     let spzData = [];
+    let stateData = [];
     let technicianData = [];
     let userID = 0;
     let userName = "";
     let userSurname = "";
+    let technicianNames = new Map();
+    let technicianSurnames = new Map();
 
     function openPopupFailures() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
-        select = document.getElementById('technicianInput')
-        var index = 0
-        technicianData.forEach(function (technician) {
-            console.log(index);
-            var option = document.createElement('option')
-            option.value = technician["ID"]
-            option.innerHTML = technician["Name"] + " " + technician["Surname"]
-            select.appendChild(option);
-            index++
-        })
+
     }
 
     function closePopupFailures() {
+        clearInputs()
         document.getElementById('popup').style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
     }
 
     function create() {
         spz = document.getElementById("spzInput").value
-        technicianID = document.getElementById("technicianInput").value
+        technicianID = parseInt(document.getElementById("technicianInput").value)
         description = document.getElementById("descriptionInput").value
-        state = document.getElementById("stateInput").value
-        console.log(spz)
+        state = parseInt(document.getElementById("stateInput").value, 10)
+        stateDes = stateData[state]["State"]
+
         $.ajax({
             method: "GET",
             url: "/get-actual-user",
@@ -248,14 +219,19 @@
                 userID = response["ID"]
                 userName = response["Name"]
                 userSurname = response["Surname"]
-
+                console.log(technicianNames.get(technicianID))
                 $(document).ready(function () {
                     var requestData = {
                         SPZ: spz,
                         AuthorID : userID,
+                        AuthorName : userName,
+                        AuthorSurname : userSurname,
                         TechnicianID: technicianID,
+                        TechnicianName: technicianNames.get(technicianID),
+                        TechnicianSurname: technicianSurnames.get(technicianID),
                         Description: description,
                         State: state,
+                        StateDescription: stateDes,
                     };
 
                     $.ajax({
@@ -264,7 +240,30 @@
                         contentType: "application/json; charset=utf-8",
                         data: JSON.stringify(requestData),
                         success: function (response) {
-                            console.log("Response from Go server:", response);
+                            var tableBody = document.getElementById("table-body")
+                            var row = tableBody.insertRow()
+
+                            var cellSPZ = row.insertCell()
+                            cellSPZ.textContent = response["SPZ"]
+
+                            var cellAuthor = row.insertCell()
+                            cellAuthor.textContent = response["AuthorSurname"]
+
+                            var cellTechnician = row.insertCell()
+                            cellTechnician.textContent = response["TechnicianSurname"]
+
+                            var cellDescription = row.insertCell()
+                            cellDescription.textContent = response["Description"]
+
+                            var cellState = row.insertCell()
+                            cellState.textContent = response["StateDescription"]
+
+                            var cellEdit = row.insertCell()
+                            cellEdit.textContent = "TBD"
+                            // TODO
+                            var cellDone = row.insertCell()
+                            cellDone.textContent = "TBD"
+                            // TODO
                         },
                         error: function (error) {
                             console.error("Error:", error);
@@ -335,6 +334,24 @@
         });
     }
 
+    function getStates() {
+        fetch('/get-states')
+            .then(response => response.json())
+            .then(data => {
+                stateData = data
+                var stateInput = document.getElementById("stateInput")
+                stateData.forEach(function (item) {
+                    var option = document.createElement("option")
+                    option.value = item["ID"]
+                    option.innerHTML = item["State"]
+                    stateInput.appendChild(option)
+                })
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
     function resizePopupToContent(rows) {
         let popup = document.getElementById('popup');
         let pixels = 450 + rows * 40
@@ -346,6 +363,16 @@
             .then(response => response.json())
             .then(data => {
                 technicianData = data;
+                select = document.getElementById('technicianInput')
+                technicianData.forEach(function (technician) {
+                    technicianNames.set(technician["ID"], technician["Name"])
+                    technicianSurnames.set(technician["ID"], technician["Surname"])
+
+                    var option = document.createElement('option')
+                    option.value = technician["ID"]
+                    option.innerHTML = technician["Name"] + " " + technician["Surname"]
+                    select.appendChild(option);
+                })
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
@@ -353,6 +380,7 @@
     }
 
     fetchData();
+    getStates()
     getTechnicians();
 
 </script>

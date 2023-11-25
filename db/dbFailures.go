@@ -19,11 +19,16 @@ type Failure struct {
 }
 
 type CreateFailure struct {
-	SPZ          string
-	AuthorID     int
-	TechnicianID int
-	Description  string
-	State        int
+	SPZ               string
+	AuthorID          int
+	AuthorName        string
+	AuthorSurname     string
+	TechnicianID      int
+	TechnicianName    string
+	TechnicianSurname string
+	Description       string
+	State             int
+	StateDescription  string
 }
 
 func GetFailures() []Failure {
@@ -110,7 +115,7 @@ func GetFailuresForSpecificSPZWithSpecificState(SPZ string, state int) []Failure
 	return failures
 }
 
-func CreateNewFailure(failure CreateFailure) {
+func CreateNewFailure(failure CreateFailure) CreateFailure {
 	fmt.Println(failure)
 	query := `INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
                                                                         (?, ?, ?, ?, ?);`
@@ -120,4 +125,6 @@ func CreateNewFailure(failure CreateFailure) {
 	if err != nil {
 		log.Fatal("CreateNewFailure: " + err.Error())
 	}
+
+	return failure
 }

@@ -310,7 +310,11 @@ func create_new_failure(writer http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			db.CreateNewFailure(failure)
+			responseData := db.CreateNewFailure(failure)
+			responseDataJSON, _ := json.Marshal(responseData)
+
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(responseDataJSON)
 		} else {
 			http.Error(writer, "Bad permissions", http.StatusNetworkAuthenticationRequired)
 			return
@@ -329,6 +333,31 @@ func sms(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		return
 	}
+}
+
+func onetime(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/one-time.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, nil)
+	if err != nil {
+		return
+	}
+}
+
+func get_states(writer http.ResponseWriter, request *http.Request) {
+	states := db.GetStates()
+
+	statesJSON, err := json.Marshal(states)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(statesJSON)
+
 }
 
 func main() {
@@ -357,6 +386,8 @@ func main() {
 	r.HandleFunc("/create-new-tech-record", create_new_tech_record)
 	r.HandleFunc("/create-new-failure", create_new_failure)
 	r.HandleFunc("/sms", sms)
+	r.HandleFunc("/one-time", onetime)
+	r.HandleFunc("/get-states", get_states)
 
 	db.InitDB()
 

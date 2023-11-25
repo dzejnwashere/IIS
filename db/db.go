@@ -49,6 +49,36 @@ func GetStops() []string {
 	return stops
 }
 
+type State struct {
+	ID    int
+	State string
+}
+
+func GetStates() []State {
+	var state State
+	var states []State
+
+	query := `SELECT * FROM stav_zavady;`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&state.ID, &state.State)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		states = append(states, state)
+	}
+	return states
+}
+
 func FeedDemoData() error {
 	file, err := os.ReadFile("res/db/demo.sql")
 	if err != nil {
@@ -115,6 +145,12 @@ func InitDB() {
 
 		passHash, _ = bcrypt.GenerateFromPassword([]byte("mixed"), 10)
 		CreateOrUpdateUser(-1, "mixed", string(passHash), "Edo", "Mixal", typedef.DispecerPerm, typedef.RidicPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("technik"), 10)
+		CreateOrUpdateUser(-1, "technik1", string(passHash), "Andrea", "Novotná", typedef.TechnikPerm)
+
+		passHash, _ = bcrypt.GenerateFromPassword([]byte("technik"), 10)
+		CreateOrUpdateUser(-1, "technik2", string(passHash), "Lukáš", "Rudický", typedef.TechnikPerm)
 	}
 
 	optionallyCreateTable := func(name string, ver int64, stmt string) {

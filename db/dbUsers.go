@@ -108,12 +108,13 @@ func RemoveUser(userID int) {
 }
 
 func GetUser(userID int64) UserData {
+	fmt.Println(userID)
 	query := `SELECT id, name, surname FROM users WHERE id = ?;`
 
 	var userData UserData
 	err := db.QueryRow(query, userID).Scan(&userData.ID, &userData.Name, &userData.Surname)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("db.GetUser() " + err.Error())
 	}
 
 	return userData

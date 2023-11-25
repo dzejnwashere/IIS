@@ -3,14 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>test</title>
+    <style>
+        .login-container {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-container h2 {
+            text-align: center;
+            color: #D22B2B;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            background-color: #D22B2B;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+    </style>
 </head>
 <body>
-<form method="post" action="/login">
-    <label for="username">Jméno:</label><input type="text" id="username" name="username">
-    <label for="password">Helo:</label><input type="password" id="password" name="password">
-    <input type="submit" value="Přihlásit se">
-</form>
 
+<div class="login-container">
+    <h2>Vítejte 👋</h2>
+    <form method="post" action="/login">
+        <div class="form-group">
+            <label for="username">Jméno: </label>
+            <input type="text" id="username" name="username"><br>
+        </div>
+        <div class="form-group">
+            <label for="password">Heslo: </label>
+            <input type="password" id="password" name="password">
+        </div>
+        <div class="form-group">
+            <br><input type="submit" value="Přihlásit se">
+        </div>
+    </form>
+</div>
 
 </body>
 </html>

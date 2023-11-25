@@ -37,13 +37,10 @@
         <th>Delete</th>
     </tr>
     </thead>
-    {{range .}}
+    {{range .Linky}}
     <tr id="line{{.Id}}">
         <td>{{.Name}}</td>
-    </tr>
-
-
-    {{end}}
+    </tr>{{end}}
 </table>
 <table id="zastavky">
     <thead>
@@ -54,26 +51,62 @@
     </tr>
     </thead>
 </table>
+<datalist id="stop-names">
+    {{range .Stops}}
+    <option data-id="{{.Id}}" value="{{.Name}}"></option>{{end}}
+</datalist>
+<form name="add-stop" id="add-stop" hidden>
+    <label for="stop-to-add">Stop name:</label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names">
+    <label for="time-to-add">Route time:</label><input type="text" id="time-to-add" name="time-to-add">
+    <button type="button" onclick="addStop()">submit</button>
+</form>
 <script>
-    $("#linky tr").click(function(){
+    function fillLineStopsTable(response) {
+        var ar = response.split("\n")
+        $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead>")
+        for (var i = 0; i < ar.length - 1; i++) {
+            var a = ar[i].split(";")
+            $("#zastavky").append("<tr id='stop-" + a[0] + "'><td>" + a[1] + "</td><td>"+a[2]+"</td></tr>")
+        }
+        $("#add-stop").show()
+    }
+
+    $('#add-stop').submit(function (evt) {
+        evt.preventDefault();
+        window.history.back();
+    });
+
+    $("#linky tbody tr").click(function(){
         $(this).addClass('selected').siblings().removeClass('selected');
-        var value=$(this).find('td:first').html();
+        currentlySelectedLine=$(this).attr("id").substring(4)
         $.ajax({
             url: "/line_stops",
-            data: {line_id: value},
-            success: function(response) {
-                var ar = response.split("\n")
-                $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead>")
-                for (var i = 0; i < ar.length - 1; i++) {
-                    var a = ar[i].split(";")
-                    $("#zastavky").append("<tr id='stop-" + a[0] + "'><td>" + a[1] + "</td><td>"+a[2]+"</td></tr>")
-                }
-            },
+            data: {line_id: currentlySelectedLine},
+            type: "GET",
+            success: fillLineStopsTable,
             error: function() {
                 alert("An error occurred while fetching the line stops.");
             }
         })
     });
+
+    function addStop() {
+        let time = $("#time-to-add").val();
+        let stopId = $("#stop-names option[value='" + $("#stop-to-add").val() + "']").attr("data-id");
+        $.ajax({
+            url: "/line_stops",
+            data: {
+                time: time,
+                line_id: currentlySelectedLine,
+                stop_id: stopId,
+            },
+            type: "POST",
+            success: fillLineStopsTable,
+            error: function() {
+                alert("An error occurred while adding the line stops.");
+            }
+        })
+    }
 </script>
 </body>
 </html>

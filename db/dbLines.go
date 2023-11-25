@@ -38,6 +38,7 @@ type Stop_line_t struct {
 	Stop_id   int
 	Stop_name string
 	Time      string
+	Line_id   int
 }
 
 func GetLineStops(lineId int) []Stop_line_t {
@@ -61,6 +62,40 @@ func GetLineStops(lineId int) []Stop_line_t {
 			Stop_id:   id,
 			Stop_name: name,
 			Time:      time,
+			Line_id:   lineId,
+		})
+	}
+	return stops
+}
+
+func AddLineStops(data Stop_line_t) error {
+	_, err := db.Exec("INSERT INTO linka_zastavka (cas, zastavka, linka) values (?, ?, ?)", data.Time, data.Stop_id, data.Line_id)
+	return err
+}
+
+type Stop_t struct {
+	Id   int
+	Name string
+}
+
+func GetStops2() []Stop_t {
+	var name string
+	var id int
+	var stops []Stop_t
+	rows, err := db.Query("Select id, nazov_zastavky from zastavky")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		stops = append(stops, Stop_t{
+			Id:   id,
+			Name: name,
 		})
 	}
 	return stops

@@ -40,8 +40,10 @@
     {{range .Linky}}
     <tr id="line{{.Id}}">
         <td>{{.Name}}</td>
+        <td><button type="button" onclick="deleteLine({{.Id}})">Delete</button></td>
     </tr>{{end}}
 </table>
+<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename"><button>Create new line</button></form>
 <table id="zastavky">
     <thead>
     <tr>
@@ -56,19 +58,23 @@
     <option data-id="{{.Id}}" value="{{.Name}}"></option>{{end}}
 </datalist>
 <form name="add-stop" id="add-stop" hidden>
+    <input type="text" id="line_stop_id" hidden>
     <label for="stop-to-add">Stop name:</label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names">
     <label for="time-to-add">Route time:</label><input type="text" id="time-to-add" name="time-to-add">
-    <button type="button" onclick="addStop()">submit</button>
+    <button type="button" onclick="addStop()" id="add-stop-btn">Create</button>
 </form>
 <script>
     function fillLineStopsTable(response) {
         var ar = response.split("\n")
-        $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead>")
+        $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead><tbody></tbody>")
         for (var i = 0; i < ar.length - 1; i++) {
             var a = ar[i].split(";")
-            $("#zastavky").append("<tr id='stop-" + a[0] + "'><td>" + a[1] + "</td><td>"+a[2]+"</td></tr>")
+            $("#zastavky tbody").append("<tr id='stop-" + a[0] + "' onclick='$(\"#line_stop_id\").val(\"" + a[0] + "\");$(\"#stop-to-add\").val(\"" + a[2] + "\");$(\"#time-to-add\").val(\"" + a[3] + "\");$(\"#add-stop-btn\").html(\"Update\")'>" +
+                "<td>" + a[2] + "</td><td>"+a[3]+"</td><td><button type='button' onclick='deleteStop(" + a[0] + ")'>Delete</button></td></tr>")
         }
+        $("#zastavky tbody").append("<tr onclick='$(\"#line_stop_id\").val(\"\");$(\"#stop-to-add\").val(\"\");$(\"#time-to-add\").val(\"\");$(\"#add-stop-btn\").html(\"Create\")'><td>New record...</td><td></td></tr>")
         $("#add-stop").show()
+        $("#add-stop input").val("")
     }
 
     $('#add-stop').submit(function (evt) {
@@ -93,17 +99,50 @@
     function addStop() {
         let time = $("#time-to-add").val();
         let stopId = $("#stop-names option[value='" + $("#stop-to-add").val() + "']").attr("data-id");
+        let line_stop_id = $("#line_stop_id").val();
+        if (line_stop_id == "") line_stop_id = undefined
         $.ajax({
             url: "/line_stops",
             data: {
                 time: time,
                 line_id: currentlySelectedLine,
                 stop_id: stopId,
+                line_stop_id: line_stop_id
             },
             type: "POST",
             success: fillLineStopsTable,
             error: function() {
                 alert("An error occurred while adding the line stops.");
+            }
+        })
+        $("#add-stop input").val("")
+    }
+
+    function deleteStop(id) {
+        $.ajax({
+            url: "/line_stops/" + id,
+            type: "DELETE",
+            success: function () {
+                $("#stop-" + id).remove()
+            },
+            error: function() {
+                alert("An error occurred while deleting the line stops.");
+            }
+        })
+    }
+
+    function deleteLine(id) {
+        url = "/lines/" + id
+        $.ajax({
+            url: url,
+            type: "DELETE",
+            success: function () {
+                $("#line" + id).remove()
+                $("#zastavky tbody tr").remove()
+                $("#add-stop").hide()
+            },
+            error: function() {
+                alert("An error occurred while deleting the line stops.");
             }
         })
     }

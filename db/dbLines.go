@@ -102,6 +102,18 @@ type Stop_t struct {
 	Name string
 }
 
+func GetStop(id int) Stop_t {
+	var spoj_temp Stop_t
+	rows := db.QueryRow("Select id, nazov_zastavky from zastavky where id = ?", id)
+
+	err := rows.Scan(&(spoj_temp.Id), &spoj_temp.Name)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return spoj_temp
+}
+
 func GetStops2() []Stop_t {
 	var name string
 	var id int

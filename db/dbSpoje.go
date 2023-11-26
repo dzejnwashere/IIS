@@ -33,6 +33,20 @@ func GetAllSpoje() []Spoj_t {
 	return spoje
 }
 
+func GetSpoj(spojId int) Spoj_t {
+	var spoj_temp Spoj_t
+	var smj int
+	rows := db.QueryRow("SELECT id, linka, cas_odjezdu, smer_jizdy, dny_jizdy from spoje where id = ?", spojId)
+
+	err := rows.Scan(&(spoj_temp.Id), &spoj_temp.Linka, &spoj_temp.CasOdjezdu, &smj, &spoj_temp.DenJizdy)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	spoj_temp.PrimarniSmer = smj == 0
+	return spoj_temp
+}
+
 func GetSpojeByLine(lineId int) []Spoj_t {
 	var spoj_temp Spoj_t
 	var smj int

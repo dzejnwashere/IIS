@@ -360,18 +360,6 @@ func get_states(writer http.ResponseWriter, request *http.Request) {
 
 }
 
-func plan(writer http.ResponseWriter, request *http.Request) {
-	files, err := template.ParseFiles("res/tmpl/plan.html")
-	if err != nil {
-		fmt.Fprintf(writer, err.Error())
-	}
-
-	err = files.Execute(writer, failures)
-	if err != nil {
-		return
-	}
-}
-
 func get_lines_from_stop(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodGet {
 		stopName := request.URL.Query().Get("Stop")

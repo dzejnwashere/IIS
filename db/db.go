@@ -106,7 +106,7 @@ func InitDB() {
 		log.Fatal(err.Error())
 	}
 
-	if getTableVersion("users") < 6 {
+	if getTableVersion("users") < 7 {
 		fmt.Printf("%d", getTableVersion("users"))
 		query := `drop table if exists users;`
 		_, err := db.Exec(query)
@@ -122,7 +122,7 @@ func InitDB() {
 	   				surname VARCHAR(40) NOT NULL,
 	   				permissions int not null,
 	   				UNIQUE (username),
-	   				PRIMARY KEY (id)) comment="6" character set utf8mb4; `
+	   				PRIMARY KEY (id)) comment="7" character set utf8mb4; `
 		_, err = db.Exec(query)
 		if err != nil {
 			log.Fatal(err.Error())
@@ -181,10 +181,10 @@ func InitDB() {
 	   				id INT AUTO_INCREMENT PRIMARY KEY,
 	       			nazev INT) comment="6" character set utf8mb4;`)
 
-	optionallyCreateTable("linka_zastavka", 8, `
+	optionallyCreateTable("linka_zastavka", 9, `
 	   			CREATE TABLE linka_zastavka (
 	   			    id int AUTO_INCREMENT PRIMARY KEY,
-	       			cas TIME,
+	       			cas int,
 	   			    zastavka INT NOT NULL,
 	   			    linka INT NOT NULL,
 	   				FOREIGN KEY (zastavka) REFERENCES zastavky(id),
@@ -234,7 +234,7 @@ func InitDB() {
 	   			    den_jizdy VARCHAR(50) NOT NULL
 	   			    ) comment="6" character set utf8mb4;`)
 
-	optionallyCreateTable("spoje", 10, `
+	optionallyCreateTable("spoje", 11, `
 	   			CREATE TABLE spoje (
 	   			    id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    linka INT NOT NULL,
@@ -243,4 +243,14 @@ func InitDB() {
 	       			dny_jizdy INT NOT NULL,
 	       			FOREIGN KEY (linka) REFERENCES linky(id) on delete cascade ,
 	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id)) comment="6" character set utf8mb4;`)
+
+	optionallyCreateTable("jizda", 2, `
+	   			CREATE TABLE jizda (
+	   			    id INT AUTO_INCREMENT PRIMARY KEY,
+	   			    spz varchar(7),
+	   				spoj int,
+	   				ridic int,
+	       			FOREIGN KEY (spoj) REFERENCES spoje(id) on delete cascade ,
+	       			FOREIGN KEY (ridic) references users(id) on delete cascade ,
+	       			FOREIGN KEY (spz) REFERENCES vozy(spz) on delete cascade) character set utf8mb4;`)
 }

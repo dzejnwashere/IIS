@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta charset="UTF-8">
     <title>DPMM</title>
 
     <style>
-        header, footer {
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -85,7 +86,6 @@
 
 </head>
 <body>
-
 <header>
     <img class="logo" src="https://cdn.discordapp.com/attachments/423562616951144448/1177927606549618718/DPMM2.png?ex=65744992&is=6561d492&hm=b2f25ad39311dcb2c4fedf3ad667dce83bf10378c1868468415e9480638314ac&" alt="DPMM">
     <nav>
@@ -99,15 +99,11 @@
         </ul>
     </nav>
 </header>
-
 <div class="container">
-    <input id="searchInput" type="text" list="stopSuggestions1" class="text-field" placeholder="Začátek cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')">
+    <input id="searchInput" type="text" list="stopSuggestions1" class="text-field" placeholder="Začátek cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')" onblur="validateStop(this.value, 'search-button')">
     <datalist id="stopSuggestions1">
     </datalist>
-    <!--<input type="text" list="stopSuggestions2" class="text-field" placeholder="Konec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
-    <datalist id="stopSuggestions2">
-    </datalist>-->
-    <button onclick="search()">Vyhledat spojení 🔍</button>
+    <button id="search-button" onclick="search()" disabled="disabled">Vyhledat spojení 🔍</button>
 </div>
 
 <h2>Jízdné</h2>
@@ -179,6 +175,26 @@
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
+    }
+
+    function validateStop(input, target) {
+        console.log(target)
+        t = document.getElementById(target)
+        $.ajax({
+            method: "GET",
+            url: "/verify-station",
+            data: { Stop: input },
+            success: function(response) {
+                if(response === true) {
+                    t.disabled = false
+                } else if(response === false) {
+                    t.disabled = true
+                }
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
     }
 
     function updateSuggestions(input, datalistId) {

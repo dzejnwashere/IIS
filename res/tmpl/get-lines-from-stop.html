@@ -35,29 +35,29 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 id="Title">Název zástavky</h2>
-    </div>
+<div class="container">
+    <h2 id="Title">Název zástavky</h2>
+</div>
 
-    <table id="table-lines">
-        <thead>
-            <th>Linka</th>
-            <th>Smer</th>
-            <th>Odchod</th>
-            <th>Dny</th>
-        </thead>
-        <tbody>
-            {{range .}}
-                <tr id="Line{{.LineName}}">
-                    <td id="LineName{{.LineName}}">{{.LineName}}</td>
-                    <td id="Direction{{.LineName}}">{{.NextStop}}</td>
-                    <td id="Time{{.LineName}}">{{.Time}}</td>
-                    <td id="Day{{.LineName}}">{{.Day}}</td>
-                </tr>
-            {{end}}
-        </tbody>
+<table id="table-lines">
+    <thead>
+    <th>Linka</th>
+    <th>Smer</th>
+    <th>Odchod</th>
+    <th>Dny</th>
+    </thead>
+    <tbody>
+    {{range .}}
+        <tr id="Line{{.LineName}}">
+            <td id="LineName{{.LineName}}">{{.LineName}}</td>
+            <td id="Direction{{.LineName}}">{{.NextStop}}</td>
+            <td id="Time{{.LineName}}">{{.Time}}</td>
+            <td id="Day{{.LineName}}">{{.Day}}</td>
+        </tr>
+    {{end}}
+    </tbody>
 
-    </table>
+</table>
 <script>
     function updateTitle() {
         currentUrl = window.location.href

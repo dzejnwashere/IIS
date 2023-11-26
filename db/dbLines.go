@@ -184,3 +184,20 @@ func GetLinesFromStop(stopName string) []LineFromStop {
 	}
 	return linesFromStop
 }
+
+func StopExists(stopName string) bool {
+	query := `SELECT COUNT(*) FROM zastavky WHERE nazov_zastavky=?;`
+	var cnt int
+
+	err := db.QueryRow(query, stopName).Scan(&cnt)
+
+	if err != nil {
+		fmt.Printf("ERROR") //TODO
+	}
+
+	if cnt == 0 {
+		return false
+	} else {
+		return true
+	}
+}

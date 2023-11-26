@@ -391,7 +391,24 @@ func get_lines_from_stop(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, "Bad request", http.StatusNetworkAuthenticationRequired)
 		return
 	}
+}
 
+func verify_station(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		stopName := request.URL.Query().Get("Stop")
+		value := db.StopExists(stopName)
+
+		statesJSON, err := json.Marshal(value)
+		if err != nil {
+			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(statesJSON)
+	} else {
+		http.Error(writer, "Bad request", http.StatusNetworkAuthenticationRequired)
+		return
+	}
 }
 
 func main() {
@@ -428,6 +445,7 @@ func main() {
 	r.HandleFunc("/get-states", get_states)
 	r.HandleFunc("/plan", plan)
 	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)
+	r.HandleFunc("/verify-station", verify_station)
 
 	db.InitDB()
 

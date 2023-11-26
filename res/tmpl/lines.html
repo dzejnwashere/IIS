@@ -42,8 +42,8 @@
         <td>{{.Name}}</td>
         <td><button type="button" onclick="deleteLine({{.Id}})">Delete</button></td>
     </tr>{{end}}
-</table>
-<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename"><button>Create new line</button></form>
+</table><br>
+<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename"><button>Create new line</button></form><br>
 <table id="zastavky">
     <thead>
     <tr>
@@ -59,8 +59,8 @@
 </datalist>
 <form name="add-stop" id="add-stop" hidden>
     <input type="text" id="line_stop_id" hidden>
-    <label for="stop-to-add">Stop name:</label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names">
-    <label for="time-to-add">Route time:</label><input type="text" id="time-to-add" name="time-to-add">
+    <label for="stop-to-add">Stop name: </label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names">
+    <label for="time-to-add">Route time: </label><input type="text" id="time-to-add" name="time-to-add">
     <button type="button" onclick="addStop()" id="add-stop-btn">Create</button>
 </form>
 <script>

@@ -18,7 +18,7 @@ type StructForLines struct {
 }
 
 func lines(writer http.ResponseWriter, request *http.Request) {
-	if !auth.HasPermission(request, typedef.SpravcePerm) {
+	if !(auth.HasPermission(request, typedef.SpravcePerm) || auth.HasPermission(request, typedef.AdminPerm)) {
 		writer.WriteHeader(403)
 		fmt.Fprint(writer, "403 insufficient permissions")
 		return

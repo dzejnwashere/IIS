@@ -254,4 +254,28 @@ func spoje(writer http.ResponseWriter, request *http.Request) {
 			}
 		}
 	}
+
+	if request.Method == "DELETE" {
+		vars := mux.Vars(request)
+		lineID, ok := vars["spojno"]
+		lineIDI, err := strconv.Atoi(lineID)
+		if !ok {
+			log.Print("DELETE /spoje No spoj id supplied")
+			writer.WriteHeader(400)
+			return
+		}
+		if err != nil {
+			log.Print("Error converting spoj_id to int in /line_stop", err)
+			writer.WriteHeader(400)
+			return
+		}
+		err = db.DeleteSpoj(lineIDI)
+		if err != nil {
+			writer.WriteHeader(400)
+			log.Println(err)
+			fmt.Fprint(writer, err.Error())
+			return
+		}
+		writer.WriteHeader(200)
+	}
 }

@@ -140,11 +140,11 @@ INSERT INTO dny_jizdy (den_jizdy) VALUES
                                       ('Sviatky'),
                                       ('Prázdniny');
 
-INSERT INTO spoje (linka, vuz, smer_jizdy, cas_odjezdu, dny_jizdy) VALUES
-                                                                       (1, 'MA018DE', 1, '8:00', 1),
-                                                                       (2, 'MA369BA', 10, '9:00', 3),
-                                                                       (3, 'MA807PQ', 1, '10:00', 2),
-                                                                       (4, 'MA382DB', 5, '11:00', 5),
-                                                                       (5, 'MA103QQ', 14, '12:00', 4);
+INSERT INTO spoje (linka, smer_jizdy, cas_odjezdu, dny_jizdy) VALUES
+                                                                       (1, 1, '8:00', 1),
+                                                                       (2, 10, '9:00', 3),
+                                                                       (3, 1, '10:00', 2),
+                                                                       (4, 5, '11:00', 5),
+                                                                       (5, 14, '12:00', 4);
 
 COMMIT;

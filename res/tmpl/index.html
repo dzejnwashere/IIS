@@ -77,6 +77,10 @@
             border-radius: 10px;
         }
 
+        .text-field {
+            margin-bottom: 5px;
+        }
+
     </style>
 
 </head>
@@ -97,13 +101,13 @@
 </header>
 
 <div class="container">
-    <input type="text" list="stopSuggestions1" class="text-field" placeholder="Začátek cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')"><br>
+    <input id="searchInput" type="text" list="stopSuggestions1" class="text-field" placeholder="Začátek cesty" oninput="updateSuggestions(this.value, 'stopSuggestions1')">
     <datalist id="stopSuggestions1">
     </datalist>
-    <input type="text" list="stopSuggestions2" class="text-field" placeholder="Konec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
+    <!--<input type="text" list="stopSuggestions2" class="text-field" placeholder="Konec cesty" oninput="updateSuggestions(this.value, 'stopSuggestions2')"><br>
     <datalist id="stopSuggestions2">
-    </datalist>
-    <button>Vyhledat spojení 🔍</button>
+    </datalist>-->
+    <button onclick="search()">Vyhledat spojení 🔍</button>
 </div>
 
 <h2>Jízdné</h2>
@@ -159,6 +163,12 @@
 
 <script>
     let stopData = [];
+
+    function search() {
+        searchQuery = document.getElementById("searchInput").value
+        url = "/get-lines-from-stop?Stop=" + searchQuery.trim().replace(/\s+/g, '%20');
+        window.location.href = url
+    }
 
     function fetchData() {
         fetch('/get-stops')

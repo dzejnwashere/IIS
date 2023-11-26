@@ -90,7 +90,7 @@ func FeedDemoData() error {
 
 func InitDB() {
 	var err error
-	db, err = sql.Open("mysql", os.Getenv("DBSTRING")+"?charset=utf8mb4&multiStatements=true")
+	db, err = sql.Open("mysql", os.Getenv("DBSTRING")+"?charset=utf8mb4&multiStatements=true&parseTime=true")
 	if err != nil {
 		log.Fatal(err)
 	}

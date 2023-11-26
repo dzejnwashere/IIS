@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        h2 {
+            color: white;
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            height: 20vh;
+            background: url('https://images.unsplash.com/photo-1618555967708-a3f44965a2cd?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td {
+            text-align: center;
+            padding: 8px;
+        }
+
+        th {
+            text-align: center;
+            padding: 8px;
+            background-color: #D22B2B;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="Title">Název zástavky</h2>
+    </div>
+
+    <table id="table-lines">
+        <thead>
+            <th>Linka</th>
+            <th>Smer</th>
+            <th>Odchod</th>
+            <th>Dny</th>
+        </thead>
+        <tbody>
+            {{range .}}
+                <tr id="Line{{.LineName}}">
+                    <td id="LineName{{.LineName}}">{{.LineName}}</td>
+                    <td id="Direction{{.LineName}}">{{.NextStop}}</td>
+                    <td id="Time{{.LineName}}">{{.Time}}</td>
+                    <td id="Day{{.LineName}}">{{.Day}}</td>
+                </tr>
+            {{end}}
+        </tbody>
+
+    </table>
+<script>
+    function updateTitle() {
+        currentUrl = window.location.href
+        myArray = currentUrl.split("=")
+        document.getElementById("Title").innerText = decodeURIComponent(myArray[1])
+    }
+
+    updateTitle()
+</script>
+</body>
+</html>

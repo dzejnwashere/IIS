@@ -372,6 +372,28 @@ func plan(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func get_lines_from_stop(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		stopName := request.URL.Query().Get("Stop")
+		lines := db.GetLinesFromStop(stopName)
+
+		files, err := template.ParseFiles("res/tmpl/get-lines-from-stop.html")
+
+		if err != nil {
+			fmt.Fprintf(writer, err.Error())
+		}
+
+		err = files.Execute(writer, lines)
+		if err != nil {
+			return
+		}
+	} else {
+		http.Error(writer, "Bad request", http.StatusNetworkAuthenticationRequired)
+		return
+	}
+
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -405,6 +427,7 @@ func main() {
 	r.HandleFunc("/one-time", onetime)
 	r.HandleFunc("/get-states", get_states)
 	r.HandleFunc("/plan", plan)
+	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)
 
 	db.InitDB()
 

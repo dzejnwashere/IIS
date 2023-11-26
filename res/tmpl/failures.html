@@ -260,7 +260,12 @@
     }
 
     function deleteFail(id) {
+        document.getElementById("editButton" + id).textContent = "✏️";
 
+        var deleteButton = document.getElementById("deleteButton" + id);
+        if (deleteButton) {
+            deleteButton.remove();
+        }
     }
 
     function editFail(id) {

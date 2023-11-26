@@ -1,7 +1,9 @@
 package db
 
 import (
+	"fmt"
 	"log"
+	"time"
 )
 
 type Line_t struct {
@@ -121,4 +123,64 @@ func GetStops2() []Stop_t {
 		})
 	}
 	return stops
+}
+
+type LineFromStop struct {
+	LineName int
+	Time     string
+	NextStop string
+	Day      string
+}
+
+func GetLinesFromStop(stopName string) []LineFromStop {
+	fmt.Println(stopName)
+	var startTime string
+	var stopTime string
+
+	query := `SELECT l.nazev, lz.cas, s.cas_odjezdu, sz.nazov_zastavky, dj.den_jizdy  from linky l
+			  join linka_zastavka lz ON lz.linka = l.id
+			  join zastavky z ON z.id = lz.zastavka
+			  join spoje s ON s.linka = l.id
+			  join zastavky sz ON s.smer_jizdy = sz.id
+			  join dny_jizdy dj ON s.dny_jizdy= dj.id
+			  WHERE z.nazov_zastavky = ?;`
+
+	rows, err := db.Query(query, stopName)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	defer rows.Close()
+
+	var linesFromStop []LineFromStop
+	var lineFS LineFromStop
+
+	for rows.Next() {
+		err := rows.Scan(&lineFS.LineName, &stopTime, &startTime, &lineFS.NextStop, &lineFS.Day)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		startTimeT, err := time.Parse(time.TimeOnly, startTime)
+		if err != nil {
+			log.Fatal("Error parsing start time:", err)
+		}
+		duration, err := time.Parse(time.TimeOnly, stopTime)
+
+		if err != nil {
+			log.Fatal("Error parsing start time:", err)
+		}
+
+		endTime := startTimeT.Add(duration.Sub(time.Time{}))
+		endTimeStr := endTime.Format(time.TimeOnly)
+
+		lineFS.Time = endTimeStr
+		linesFromStop = append(linesFromStop, lineFS)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return linesFromStop
 }

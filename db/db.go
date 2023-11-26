@@ -234,16 +234,13 @@ func InitDB() {
 	   			    den_jizdy VARCHAR(50) NOT NULL
 	   			    ) comment="6" character set utf8mb4;`)
 
-	optionallyCreateTable("spoje", 7, `
+	optionallyCreateTable("spoje", 10, `
 	   			CREATE TABLE spoje (
+	   			    id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    linka INT NOT NULL,
-	   				cas_odjezdu varchar(10) NOT NULL,
-	   				smer_jizdy INT NOT NULL, -- cislo zastavky
+	   				cas_odjezdu time NOT NULL,
+	   				smer_jizdy INT NOT NULL, -- 0 pro primární směr, 1 pro opačný
 	       			dny_jizdy INT NOT NULL,
-	       			vuz VARCHAR(7) NOT NULL,
-	       			PRIMARY KEY (linka, vuz, smer_jizdy, cas_odjezdu, dny_jizdy),
-	       			FOREIGN KEY (vuz) REFERENCES vozy(spz),
 	       			FOREIGN KEY (linka) REFERENCES linky(id) on delete cascade ,
-	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id),
-	       			FOREIGN KEY (smer_jizdy) REFERENCES zastavky(id)) comment="6" character set utf8mb4;`)
+	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id)) comment="6" character set utf8mb4;`)
 }

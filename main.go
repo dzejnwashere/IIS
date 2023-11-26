@@ -380,6 +380,8 @@ func main() {
 	r.HandleFunc("/lines/{lineno}", lines)
 	r.HandleFunc("/line_stops", line_stops)
 	r.HandleFunc("/line_stops/{lsno}", line_stops)
+	r.HandleFunc("/spoje", spoje)
+	r.HandleFunc("/spoje/{spojno}", spoje)
 	r.HandleFunc("/get-stops", get_stops)
 	r.HandleFunc("/get-specific-failures-state", get_specific_failures_state)
 	r.HandleFunc("/spz-exists", spz_exists)

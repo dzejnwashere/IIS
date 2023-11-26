@@ -23,7 +23,7 @@ func HasPermission(request *http.Request, perm typedef.Permission) bool {
 	if perm == typedef.UnprotectedPerm {
 		return true
 	}
-	return (db.GetPermissions(subjectI) & (1 << perm)) != 0
+	return (db.GetPermissions(subjectI)&(1<<perm)) != 0 || (db.GetPermissions(subjectI)&(1<<typedef.AdminPerm)) != 0
 }
 
 func GetUserId(request *http.Request) int64 {

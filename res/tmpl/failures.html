@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .popup-container {
             display: none;
@@ -39,11 +40,6 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
-        }
-
-        .popup-table {
-            border-collapse: collapse;
-            width: 100%;
         }
 
         table {
@@ -100,16 +96,172 @@
             </tr>
         {{end}}
     </tbody>
-
 </table>
 <br>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
+
+<button class="create-failure" onclick="openPopupFailures()">➕</button>
+
+
+<div id="popup" class="popup-container">
+    <p>Vytvořit novú závadu</p>
+    <div class="popup-row">
+        <label for="spzInput">SPZ:</label>
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpzForTarget(this.value, spzInputStatus)" oninput="updateSuggestions(this)">
+        <datalist id="spzSuggestions">
+        </datalist>
+        <label for="spzInput" id="spzInputStatus">❌</label>
+    </div>
+
+    <div class="popup-row">
+        <label for="technicianInput">Technik:</label>
+        <select id="technicianInput">
+
+        </select>
+    </div>
+
+    <div class="popup-row">
+        <label for="descriptionInput">Popis:</label><br>
+        <textarea id="descriptionInput"></textarea>
+    </div>
+
+    <div class="popup-row">
+        <label for="stateInput">Současný stav:</label>
+        <select id="stateInput">
+
+        </select>
+    </div>
+
+    <button onclick="closePopupFailures()">Zrušit</button>
+    <button id="create-btn" onclick="newCreate()">Vytvoriť závadu</button>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+
+<script type="text/javascript">
     var spzData;
     var stateData = [];
     var technicianData = [];
     var technicianMap = new Map()
     var stateMap = new Map()
+    var userID = 0;
+    var userName = "";
+    var userSurname = "";
+    technicianNames = new Map();
+    var technicianSurnames = new Map();
+
+    function openPopupFailures() {
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+        updateTechnicians("technicianInput")
+        updateStates("stateInput")
+    }
+
+    function closePopupFailures() {
+        clearInputs()
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function newCreate() {
+        spz = document.getElementById("spzInput").value;
+        technicianID = parseInt(document.getElementById("technicianInput").value);
+        description = document.getElementById("descriptionInput").value;
+        state = parseInt(document.getElementById("stateInput").value, 10);
+
+        $.ajax({
+            method: "GET",
+            url: "/get-actual-user",
+            success: function(response) {
+                userID = response["ID"];
+                userName = response["Name"];
+                userSurname = response["Surname"];
+
+                var requestData = {
+                    SPZ: spz,
+                    AuthorID: userID,
+                    TechnicianID: technicianID,
+                    Description: description,
+                    State: state,
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/create-new-failure",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(requestData),
+                    success: function(response) {
+                        var tableBody = document.getElementById("table-body")
+                        tableBody.innerHTML = ""
+
+                        response.forEach(function (item) {
+                            console.log(item["FailureID"])
+                            ID = item["FailureID"]
+                            var row = tableBody.insertRow()
+
+                            var cellSpz = row.insertCell()
+                            cellSpz.id = "spz" + ID
+                            cellSpz.textContent = item["SPZ"]
+
+                            var cellAuthor = row.insertCell()
+                            cellAuthor.id = "authorSurname" + ID
+                            cellAuthor.textContent = item["AuthorName"] + " " + item["AuthorSurname"]
+
+                            var cellTechnician = row.insertCell()
+                            cellTechnician.id = "technicianSurname" + ID
+                            cellTechnician.textContent = item["TechnicianName"] + " " + item["TechnicianSurname"]
+
+                            var cellDescription = row.insertCell()
+                            cellDescription.id = "description" + ID
+                            cellDescription.textContent = item["Description"]
+
+                            var cellState = row.insertCell()
+                            cellState.id = "state" + ID
+                            cellState.textContent = item["State"]
+
+                            var cellEditButton = row.insertCell()
+                            cellEditButton.innerHTML = '<button id="editButton'+ID+'" class="edit-btn" onclick="editFail('+ID+')">✏️</button>'
+                        })
+                    },
+                    error: function () {
+                        console.log("ERROR 2")
+                    }
+                });
+            },
+            error: function () {
+                console.log("ERROR")
+            }
+        })
+    }
+
+
+    function clearInputs() {
+        document.getElementById("spzInput").value = '';
+        document.getElementById("technicianInput").value = '';
+        document.getElementById("descriptionInput").value = '';
+        document.getElementById("stateInput").value = '';
+    }
+
+    function updateSuggestions(input) {
+        var inputValue = input.value.toLowerCase();
+        var dataList = document.getElementById('spzSuggestions');
+
+        dataList.innerHTML = '';
+
+        var filteredSuggestions = spzData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            dataList.appendChild(option);
+        });
+    }
+
+    function deleteFail(id) {
+
+    }
 
     function editFail(id) {
         document.getElementById("editButton" + id).textContent = "✅";
@@ -121,9 +273,7 @@
         var state = document.getElementById("state" + id);
 
         var spzValue = spz.innerText
-        var technicianSurnameValue = technicianSurname.innerText
         var descriptionValue = description.innerText
-        var stateValue = state.innerText
 
         document.getElementById("editButton" + id).onclick = function() {
             changeEditState(id)
@@ -187,7 +337,6 @@
             editFail(id)
         }
 
-
         var spz = document.getElementById("spz" + id);
         var technicianSurname = document.getElementById("technicianSurname" + id);
         var description = document.getElementById("description" + id);
@@ -234,7 +383,7 @@
             .then(data => {
                 stateData = data
                 data.forEach(function (item) {
-                   stateMap.set(item["ID"], item["State"])
+                    stateMap.set(item["ID"], item["State"])
                 });
             })
             .catch(error => {
@@ -251,7 +400,7 @@
             select.appendChild(option)
         });
     }
-
+c
 
     function getTechnicians(){
         fetch('/get-technicians')
@@ -259,7 +408,7 @@
             .then(data => {
                 technicianData = data;
                 data.forEach(function (item) {
-                   technicianMap.set(item["ID"], item["Name"] + " " + item["Surname"])
+                    technicianMap.set(item["ID"], item["Name"] + " " + item["Surname"])
                 });
             })
             .catch(error => {
@@ -271,188 +420,5 @@
     getStates();
     getTechnicians();
 </script>
-<button class="create-failure" onclick="openPopupFailures()">➕</button>
-
-<div id="popup" class="popup-container">
-    <p>Vytvořit novú závadu</p>
-    <div class="popup-row">
-        <label for="spzInput">SPZ:</label>
-        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpz(this.value)" oninput="updateSuggestions(this)">
-        <datalist id="spzSuggestions">
-        </datalist>
-        <label for="spzInput" id="spzInputStatus">❌</label>
-    </div>
-
-    <div class="popup-row">
-        <label for="technicianInput">Technik:</label>
-        <select id="technicianInput">
-
-        </select>
-    </div>
-
-    <div class="popup-row">
-        <label for="descriptionInput">Popis:</label><br>
-        <textarea id="descriptionInput"></textarea>
-    </div>
-
-    <div class="popup-row">
-        <label for="stateInput">Současný stav:</label>
-        <select id="stateInput">
-
-        </select>
-    </div>
-
-    <button onclick="closePopupFailures()">Zrušit</button>
-    <button id="create-btn" onclick="create()">Vytvoriť závadu</button>
-</div>
-
-<div id="overlay" class="overlay"></div>
-
-<script>
-
-    let userID = 0;
-    let userName = "";
-    let userSurname = "";
-    technicianNames = new Map();
-    let technicianSurnames = new Map();
-
-    function openPopupFailures() {
-        document.getElementById('popup').style.display = 'block';
-        document.getElementById('overlay').style.display = 'block';
-        updateTechnicians("technicianInput")
-        updateStates("stateInput")
-    }
-
-    function closePopupFailures() {
-        clearInputs()
-        document.getElementById('popup').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-    }
-
-    function create() {
-        spz = document.getElementById("spzInput").value
-        technicianID = parseInt(document.getElementById("technicianInput").value)
-        description = document.getElementById("descriptionInput").value
-        state = parseInt(document.getElementById("stateInput").value, 10)
-        stateDes = stateData[state]["State"]
-
-        $.ajax({
-            method: "GET",
-            url: "/get-actual-user",
-            success: function(response) {
-                userID = response["ID"]
-                userName = response["Name"]
-                userSurname = response["Surname"]
-                console.log(technicianNames.get(technicianID))
-                $(document).ready(function () {
-                    var requestData = {
-                        SPZ: spz,
-                        AuthorID : userID,
-                        AuthorName : userName,
-                        AuthorSurname : userSurname,
-                        TechnicianID: technicianID,
-                        TechnicianName: technicianNames.get(technicianID),
-                        TechnicianSurname: technicianSurnames.get(technicianID),
-                        Description: description,
-                        State: state,
-                        StateDescription: stateDes,
-                    };
-
-                    $.ajax({
-                        type: "POST",
-                        url: "/create-new-failure",
-                        contentType: "application/json; charset=utf-8",
-                        data: JSON.stringify(requestData),
-                        success: function (response) {
-                            var tableBody = document.getElementById("table-body")
-                            var row = tableBody.insertRow()
-
-                            var cellSPZ = row.insertCell()
-                            cellSPZ.textContent = response["SPZ"]
-
-                            var cellAuthor = row.insertCell()
-                            cellAuthor.textContent = response["AuthorSurname"]
-
-                            var cellTechnician = row.insertCell()
-                            cellTechnician.textContent = response["TechnicianSurname"]
-
-                            var cellDescription = row.insertCell()
-                            cellDescription.textContent = response["Description"]
-
-                            var cellState = row.insertCell()
-                            cellState.textContent = response["StateDescription"]
-
-
-
-                            var cellEdit = row.insertCell()
-                            cellEdit.innerHTML = '<td><button id="editButton{{.FailureID}}" class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>'
-                        },
-                        error: function (error) {
-                            console.error("Error:", error);
-                        }
-                    });
-                });
-                clearInputs()
-                document.getElementById('popup').style.display = 'none';
-                document.getElementById('overlay').style.display = 'none';
-            },
-            error: function() {
-                console.log("ERROR");
-            }
-        });
-
-    }
-
-    function clearInputs() {
-        document.getElementById("spzInput").value = '';
-        document.getElementById("technicianInput").value = '';
-        document.getElementById("descriptionInput").value = '';
-        document.getElementById("stateInput").value = '';
-    }
-
-    function updateSuggestions(input) {
-        var inputValue = input.value.toLowerCase();
-        var dataList = document.getElementById('spzSuggestions');
-
-        dataList.innerHTML = '';
-
-        var filteredSuggestions = spzData.filter(function (suggestion) {
-            return suggestion.toLowerCase().includes(inputValue);
-        });
-
-        filteredSuggestions.forEach(function (suggestion) {
-            var option = document.createElement('option');
-            option.value = suggestion;
-            dataList.appendChild(option);
-        });
-    }
-
-    function validateSpz(input) {
-        $.ajax({
-            method: "GET",
-            url: "/spz-exists",
-            data: { SPZ: input },
-            success: function(response) {
-                if(response === true) {
-                    document.getElementById("spzInputStatus").innerHTML = "✅";
-                } else if(response === false) {
-                    document.getElementById("spzInputStatus").innerHTML = "❌";
-                }
-            },
-            error: function() {
-                console.log("ERROR");
-            }
-        });
-    }
-
-
-    function resizePopupToContent(rows) {
-        let popup = document.getElementById('popup');
-        let pixels = 450 + rows * 40
-        popup.style.height = pixels.toString() + 'px';
-    }
-
-</script>
-
 </body>
 </html>

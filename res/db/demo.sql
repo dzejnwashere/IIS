@@ -117,6 +117,7 @@ INSERT INTO vozy (spz, druh, znacka, kapacita) VALUES
                                                    ('MA103QQ', 'trolejbus', 'SOR', 68);
 
 INSERT INTO stav_zavady (stav) VALUES
+                                   ('Nepřideleno'),
                                    ('Přideleno'),
                                    ('V řešení'),
                                    ('Pozastaveno'),

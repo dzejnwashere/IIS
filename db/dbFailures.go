@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 )
@@ -9,9 +10,9 @@ type Failure struct {
 	FailureID         int
 	SPZ               string
 	Description       string
-	TechnicianID      int
-	TechnicianName    string
-	TechnicianSurname string
+	TechnicianID      *int
+	TechnicianName    *string
+	TechnicianSurname *string
 	State             string
 	AuthorId          int
 	AuthorName        string
@@ -19,23 +20,20 @@ type Failure struct {
 }
 
 type CreateFailure struct {
-	SPZ               string
-	AuthorID          int
-	AuthorName        string
-	AuthorSurname     string
-	TechnicianID      int
-	TechnicianName    string
-	TechnicianSurname string
-	Description       string
-	State             int
-	StateDescription  string
+	SPZ          string
+	AuthorID     int
+	TechnicianID *int
+	Description  string
+	State        int
 }
 
 func GetFailures() []Failure {
-	query := `SELECT z.id, z.SPZ, z.popis, t.id, t.name, t.surname, sz.stav, s.id, s.name, s.surname FROM zavady z
-			  JOIN users s ON z.autor=s.id
-			  JOIN users t ON z.technik=t.id
-			  JOIN stav_zavady sz ON z.stav=sz.id;`
+	query := `SELECT z.id, z.SPZ, z.popis, t.id AS technician_id, t.name AS technician_name, t.surname AS technician_surname, sz.stav, s.id AS author_id, s.name AS author_name, s.surname AS author_surname
+				FROM zavady z
+				JOIN users s ON z.autor = s.id
+				LEFT JOIN users t ON z.technik = t.id
+				JOIN stav_zavady sz ON z.stav = sz.id
+				ORDER BY z.id DESC;`
 
 	rows, err := db.Query(query)
 
@@ -115,16 +113,26 @@ func GetFailuresForSpecificSPZWithSpecificState(SPZ string, state int) []Failure
 	return failures
 }
 
-func CreateNewFailure(failure CreateFailure) CreateFailure {
+func CreateNewFailure(failure CreateFailure) []Failure {
+	var technicianID sql.NullInt32
+
+	if failure.TechnicianID == nil {
+		technicianID = sql.NullInt32{Valid: false}
+	} else {
+		technicianID = sql.NullInt32{Int32: int32(*failure.TechnicianID), Valid: true}
+	}
+
 	fmt.Println(failure)
 	query := `INSERT INTO zavady (spz, autor, technik, popis, stav) VALUES
                                                                         (?, ?, ?, ?, ?);`
 
-	_, err := db.Exec(query, failure.SPZ, failure.AuthorID, failure.TechnicianID, failure.Description, failure.State)
+	_, err := db.Exec(query, failure.SPZ, failure.AuthorID, technicianID, failure.Description, failure.State)
 
 	if err != nil {
 		log.Fatal("CreateNewFailure: " + err.Error())
 	}
 
-	return failure
+	failures := GetFailures()
+
+	return failures
 }

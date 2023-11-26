@@ -360,6 +360,18 @@ func get_states(writer http.ResponseWriter, request *http.Request) {
 
 }
 
+func plan(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/plan.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, failures)
+	if err != nil {
+		return
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -392,6 +404,7 @@ func main() {
 	r.HandleFunc("/sms", sms)
 	r.HandleFunc("/one-time", onetime)
 	r.HandleFunc("/get-states", get_states)
+	r.HandleFunc("/plan", plan)
 
 	db.InitDB()
 

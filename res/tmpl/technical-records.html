@@ -81,7 +81,7 @@
     </script>
 </head>
 <body>
-<h2>Technical Records 🚎</h2><br>
+<h2>Technické záznamy 🚎</h2><br>
 
 <select name="failures" id="failures">
     <option value="all">All</option>
@@ -94,11 +94,12 @@
     <thead>
         <tr>
             <th>SPZ</th>
-            <th>Date</th>
-            <th>Failure</th>
-            <th>Details</th>
+            <th>Dátum</th>
+            <th>Závada</th>
+            <th>Detaily</th>
             <th>AuthorName</th>
             <th>AuthorSurname</th>
+            <th>Upravit</th>
         </tr>
     </thead>
     <tbody id="tech-records-tbody">
@@ -114,6 +115,7 @@
                 <td id="details{{.SPZ}}{{.Date}}">{{.Details}}</td>
                 <td id="author-name{{.SPZ}}{{.Date}}">{{.AuthorName}}</td>
                 <td id="author-surname{{.SPZ}}{{.Date}}">{{.AuthorSurname}}</td>
+                <td><button id="editButton{{.SPZ}}{{.Date}}" class="edit-btn" onclick="editTechRec({{.SPZ}}+{{.Date}})">✏️</button></td>
             </tr>
         {{end}}
     </tbody>
@@ -134,7 +136,24 @@
     <div class="popup-row">
         <label for="dateInput">Date:</label>
         <input type="date" id="dateInput" onblur="validateDate(this.value)">
-        <label for="dateInput" id="dateInputStatus">❌</label>
+        <label for="dateInput" id="dateInputStatus">✅</label>
+
+        <script>
+            function getTodayDate() {
+                const today = new Date();
+                const day = today.getDate().toString().padStart(2, '0');
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const year = today.getFullYear();
+                return `${year}-${month}-${day}`;
+            }
+
+            document.getElementById('dateInput').value = getTodayDate();
+
+            function validateDate(date) {
+                console.log('Validating date:', date);
+            }
+        </script>
+
     </div>
     <div id="tableContainer" class="popup-row">
         <label for="failure-table">Failures:</label>
@@ -172,6 +191,86 @@
     let userName = "";
     let userSurname = "";
 
+    function editTechRec(id) {
+        document.getElementById("editButton" + id).textContent = "✅";
+        document.getElementById("editButton" + id).insertAdjacentHTML('afterend', '&nbsp;<button id="deleteButton' + id + '" class="delete-btn" onclick="deleteFail(' + id + ')">❌</button>');
+
+        var spz = document.getElementById("spz" + id);
+        var detail = document.getElementById("details" + id);
+
+        var spzValue = spz.innerText
+        var detailValue = detail.innerText
+
+
+        document.getElementById("editButton" + id).onclick = function() {
+            changeEditTechRec(id)
+        }
+
+        sugTarget = "newSpzSuggestion" + id
+        verTarget = "newSpzInputStatus" + id
+
+        spz.innerHTML = '<input id="editSpz' + id + '" type="text" value="' + spzValue + '" list="newSpzSuggestion' + id + '" oninput="updateSuggestionsForTarget(this,'+sugTarget+')" onblur="validateSpzForTarget(this.value,'+verTarget+')">' +
+            '<datalist id="newSpzSuggestion' + id + '"></datalist>'
+            + '<label for="editSpz' + id + '" id="newSpzInputStatus' + id + '">❌</label>'
+        detail.innerHTML = '<input id="editDetail' + id + '" type="text" value="' + detailValue + '">';
+
+    }
+
+    function changeEditTechRec(id){
+        document.getElementById("editButton" + id).textContent = "✏️";
+
+        var deleteButton = document.getElementById("deleteButton" + id);
+        if (deleteButton) {
+            deleteButton.remove();
+        }
+
+        document.getElementById("editButton" + id).onclick = function() {
+            editTechRec(id)
+        }
+
+        var spz = document.getElementById("spz" + id);
+        var detail = document.getElementById("details" + id);
+
+        var newSpz = document.getElementById("editSpz" + id);
+        var newDetail = document.getElementById("editDetail" + id); //chyba
+
+        spz.innerHTML = newSpz.value
+        detail.innerHTML = newDetail.value
+    }
+
+    function updateSuggestionsForTarget(input, target) {
+        var inputValue = input.value.toLowerCase();
+        target.innerHTML = '';
+
+        var filteredSuggestions = spzData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            target.appendChild(option);
+        });
+    }
+
+    function validateSpzForTarget(input, target) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    target.innerHTML = "✅";
+                } else if(response === false) {
+                    target.innerHTML = "❌";
+                }
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
+    }
+
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
@@ -197,6 +296,7 @@
         spz = document.getElementById("spzInput").value
         date = document.getElementById("dateInput").value
         details = document.getElementById("detailsInput").value
+
         $.ajax({
             method: "GET",
             url: "/get-actual-user",

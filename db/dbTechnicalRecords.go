@@ -19,7 +19,7 @@ type TechnicalRecord struct {
 type CreateTechnicalRecord struct {
 	SPZ                string
 	Date               string
-	FailureID          int
+	FailureID          *int32
 	FailureDescription string
 	Details            string
 	AuthorID           int
@@ -79,7 +79,15 @@ func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) CreateTechnicalR
 	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada, popis, autor) VALUES
                                                                         (?, ?, ?, ?, ?);`
 
-	_, err := db.Exec(query, techRecord.SPZ, techRecord.Date, techRecord.FailureID, techRecord.Details, techRecord.AuthorID)
+	var failureId sql.NullInt32
+
+	if techRecord.FailureID == nil {
+		failureId = sql.NullInt32{Valid: false}
+	} else {
+		failureId = sql.NullInt32{Int32: *techRecord.FailureID, Valid: true}
+	}
+
+	_, err := db.Exec(query, techRecord.SPZ, techRecord.Date, failureId, techRecord.Details, techRecord.AuthorID)
 
 	if err != nil {
 		log.Fatal("CreateNewTechnicalRecord: " + err.Error())

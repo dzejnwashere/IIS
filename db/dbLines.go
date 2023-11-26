@@ -147,7 +147,7 @@ type LineFromStop struct {
 func GetLinesFromStop(stopName string) []LineFromStop {
 	fmt.Println(stopName)
 	var startTime string
-	var stopTime string
+	var stopTime int
 
 	query := `SELECT l.nazev, lz.cas, s.cas_odjezdu, sz.nazov_zastavky, dj.den_jizdy  from linky l
 			  join linka_zastavka lz ON lz.linka = l.id
@@ -178,7 +178,8 @@ func GetLinesFromStop(stopName string) []LineFromStop {
 		if err != nil {
 			log.Fatal("Error parsing start time:", err)
 		}
-		duration, err := time.Parse(time.TimeOnly, stopTime)
+
+		duration, err := time.Parse(time.TimeOnly, CalculateStopTime(startTime, stopTime))
 
 		if err != nil {
 			log.Fatal("Error parsing start time:", err)

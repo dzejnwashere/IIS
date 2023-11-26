@@ -22,7 +22,10 @@ func CalculateStopTime(Departure string, duration int) string {
 	split := strings.Split(Departure, ":")
 	hours, _ := strconv.Atoi(split[0])
 	mins, _ := strconv.Atoi(split[1])
-	return strconv.Itoa((hours*60+mins+duration)/60) + ":" + strconv.Itoa((hours*60+mins+duration)%60)
+	if ((hours*60 + mins + duration) % 60) < 10 {
+		return strconv.Itoa((hours*60+mins+duration)/60) + ":0" + strconv.Itoa((hours*60+mins+duration)%60) + ":00"
+	}
+	return strconv.Itoa((hours*60+mins+duration)/60) + ":" + strconv.Itoa((hours*60+mins+duration)%60) + ":00"
 
 }
 

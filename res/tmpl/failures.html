@@ -85,7 +85,6 @@
             <th>Popis</th>
             <th>Stav</th>
             <th>Upravit</th>
-            <th>Vyřešeno</th>
         </tr>
     </thead>
 
@@ -97,55 +96,181 @@
                 <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
                 <td id="description{{.FailureID}}">{{.Description}}</td>
                 <td id="state{{.FailureID}}">{{.State}}</td>
-                <td><button class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
-                <td><button class="done-btn" onclick="doneFail({{.FailureID}})">✅</button></td>
+                <td><button id="editButton{{.FailureID}}" class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
             </tr>
-            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-            <script>
-
-                /*document.getElementById("editFail" + {{.FailureID}}).onclick = function() {
-                    editFail(id);
-                    //zmenit text na buttone na ✅
-                }
-
-                document.getElementById("doneFail" + {{.FailureID}}).onclick = function() {
-                    doneFail(id);
-                }*/
-
-                function doneFail(id) {
-                    //change state to "Vyřešeno" v DB
-                }
-
-                function editFail(id) {
-                    var spz = document.getElementById("spz" + id);
-                    var authorSurname = document.getElementById("authorSurname" + id);
-                    var technicianSurname = document.getElementById("technicianSurname" + id);
-                    var description = document.getElementById("description" + id);
-                    var state = document.getElementById("state" + id);
-
-                    spz.innerHTML = '<input type="text" value="' + spz.innerHTML + '">';
-                    authorSurname.innerHTML = '<input type="text" value="' + authorSurname.innerHTML + '">';
-                    technicianSurname.innerHTML = '<input type="text" value="' + technicianSurname.innerHTML + '">';
-                    description.innerHTML = '<input type="text" value="' + description.innerHTML + '">';
-                    state.innerHTML = '<input type="text" value="' + state.innerHTML + '">';
-
-                    document.getElementById("editFail" + id).onclick = function() {
-                        changeEditState(id);
-                    }
-                }
-
-                function changeEditState(id){
-                    //zmeniť hodnoty v db
-                    //späť na default zobrazenie (bez textfieldu)
-                }
-
-            </script>
         {{end}}
     </tbody>
 
 </table>
 <br>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var spzData;
+    var stateData = [];
+    var technicianData = [];
+    var technicianMap = new Map()
+    var stateMap = new Map()
 
+    function editFail(id) {
+        document.getElementById("editButton" + id).textContent = "✅";
+        document.getElementById("editButton" + id).insertAdjacentHTML('afterend', '&nbsp;<button id="deleteButton' + id + '" class="delete-btn" onclick="deleteFail(' + id + ')">❌</button>');
+
+        var spz = document.getElementById("spz" + id);
+        var technicianSurname = document.getElementById("technicianSurname" + id);
+        var description = document.getElementById("description" + id);
+        var state = document.getElementById("state" + id);
+
+        var spzValue = spz.innerText
+        var technicianSurnameValue = technicianSurname.innerText
+        var descriptionValue = description.innerText
+        var stateValue = state.innerText
+
+        document.getElementById("editButton" + id).onclick = function() {
+            changeEditState(id)
+        }
+        sugTarget = "newSpzSuggestion" + id
+        verTarget = "newSpzInputStatus" + id
+        spz.innerHTML = '<input id="editSpz' + id + '" type="text" value="' + spzValue + '" list="newSpzSuggestion' + id + '" oninput="updateSuggestionsForTarget(this,'+sugTarget+')" onblur="validateSpzForTarget(this.value,'+verTarget+')">' +
+            '<datalist id="newSpzSuggestion' + id + '"></datalist>'
+            + '<label for="editSpz' + id + '" id="newSpzInputStatus' + id + '">❌</label>'
+        technicianSurname.innerHTML = '<select id="editTechnician' + id + '">';
+        updateTechnicians("editTechnician" + id)
+        description.innerHTML = '<input id="editDescription' + id + '" type="text" value="' + descriptionValue + '">';
+        state.innerHTML = '<select id="editState' + id + '"></select>';
+        updateStates("editState" + id)
+
+    }
+
+    function updateSuggestionsForTarget(input, target) {
+        var inputValue = input.value.toLowerCase();
+        target.innerHTML = '';
+
+        var filteredSuggestions = spzData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            target.appendChild(option);
+        });
+    }
+
+    function validateSpzForTarget(input, target) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    target.innerHTML = "✅";
+                } else if(response === false) {
+                    target.innerHTML = "❌";
+                }
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
+    }
+
+    function changeEditState(id){
+
+        document.getElementById("editButton" + id).textContent = "✏️";
+
+        var deleteButton = document.getElementById("deleteButton" + id);
+        if (deleteButton) {
+            deleteButton.remove();
+        }
+
+        document.getElementById("editButton" + id).onclick = function() {
+            editFail(id)
+        }
+
+
+        var spz = document.getElementById("spz" + id);
+        var technicianSurname = document.getElementById("technicianSurname" + id);
+        var description = document.getElementById("description" + id);
+        var state = document.getElementById("state" + id);
+
+        var newSpz = document.getElementById("editSpz" + id);
+        var newTechnicianSurname = document.getElementById("editTechnician" + id);
+        var newDescription = document.getElementById("editDescription" + id);
+        var newState = document.getElementById("editState" + id);
+
+        spz.innerHTML = newSpz.value
+
+        technicianSurname.innerHTML = technicianMap.get(parseInt(newTechnicianSurname.value))
+        description.innerHTML = newDescription.value
+        state.innerHTML = stateMap.get(parseInt(newState.value))
+    }
+
+    function fetchSPZData() {
+        console.log("fetchData")
+        fetch('/get-spzs')
+            .then(response => response.json())
+            .then(data => {
+                spzData = data
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error)
+            });
+        console.log("fetchDataDONE")
+    }
+
+    function updateStates(target) {
+        select = document.getElementById(target)
+        stateData.forEach(function (item) {
+            var option = document.createElement("option")
+            option.value = item["ID"]
+            option.innerHTML = item["State"]
+            select.appendChild(option)
+        })
+    }
+
+    function getStates() {
+        fetch('/get-states')
+            .then(response => response.json())
+            .then(data => {
+                stateData = data
+                data.forEach(function (item) {
+                   stateMap.set(item["ID"], item["State"])
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    function updateTechnicians(target) {
+        select = document.getElementById(target)
+        technicianData.forEach(function (item) {
+            var option = document.createElement("option")
+            option.value = item["ID"]
+            option.innerHTML = item["Name"] + " " + item["Surname"]
+            select.appendChild(option)
+        });
+    }
+
+
+    function getTechnicians(){
+        fetch('/get-technicians')
+            .then(response => response.json())
+            .then(data => {
+                technicianData = data;
+                data.forEach(function (item) {
+                   technicianMap.set(item["ID"], item["Name"] + " " + item["Surname"])
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    }
+
+    fetchSPZData()
+    getStates();
+    getTechnicians();
+</script>
 <button class="create-failure" onclick="openPopupFailures()">➕</button>
 
 <div id="popup" class="popup-container">
@@ -184,19 +309,18 @@
 <div id="overlay" class="overlay"></div>
 
 <script>
-    let spzData = [];
-    let stateData = [];
-    let technicianData = [];
+
     let userID = 0;
     let userName = "";
     let userSurname = "";
-    let technicianNames = new Map();
+    technicianNames = new Map();
     let technicianSurnames = new Map();
 
     function openPopupFailures() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
-
+        updateTechnicians("technicianInput")
+        updateStates("stateInput")
     }
 
     function closePopupFailures() {
@@ -258,12 +382,10 @@
                             var cellState = row.insertCell()
                             cellState.textContent = response["StateDescription"]
 
+
+
                             var cellEdit = row.insertCell()
-                            cellEdit.textContent = "TBD"
-                            // TODO
-                            var cellDone = row.insertCell()
-                            cellDone.textContent = "TBD"
-                            // TODO
+                            cellEdit.innerHTML = '<td><button id="editButton{{.FailureID}}" class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>'
                         },
                         error: function (error) {
                             console.error("Error:", error);
@@ -286,17 +408,6 @@
         document.getElementById("technicianInput").value = '';
         document.getElementById("descriptionInput").value = '';
         document.getElementById("stateInput").value = '';
-    }
-
-    function fetchData() {
-        fetch('/get-spzs')
-            .then(response => response.json())
-            .then(data => {
-                spzData = data
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
     }
 
     function updateSuggestions(input) {
@@ -334,54 +445,12 @@
         });
     }
 
-    function getStates() {
-        fetch('/get-states')
-            .then(response => response.json())
-            .then(data => {
-                stateData = data
-                var stateInput = document.getElementById("stateInput")
-                stateData.forEach(function (item) {
-                    var option = document.createElement("option")
-                    option.value = item["ID"]
-                    option.innerHTML = item["State"]
-                    stateInput.appendChild(option)
-                })
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }
 
     function resizePopupToContent(rows) {
         let popup = document.getElementById('popup');
         let pixels = 450 + rows * 40
         popup.style.height = pixels.toString() + 'px';
     }
-
-    function getTechnicians(){
-        fetch('/get-technicians')
-            .then(response => response.json())
-            .then(data => {
-                technicianData = data;
-                select = document.getElementById('technicianInput')
-                technicianData.forEach(function (technician) {
-                    technicianNames.set(technician["ID"], technician["Name"])
-                    technicianSurnames.set(technician["ID"], technician["Surname"])
-
-                    var option = document.createElement('option')
-                    option.value = technician["ID"]
-                    option.innerHTML = technician["Name"] + " " + technician["Surname"]
-                    select.appendChild(option);
-                })
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }
-
-    fetchData();
-    getStates()
-    getTechnicians();
 
 </script>
 

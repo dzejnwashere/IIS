@@ -92,11 +92,11 @@
         <ul>
             <li>{{if not .LoggedIn}}<a href="/login">Přihlásit se</a>{{end}}</li>
             <li>{{if .Admin}}<a href="/usrmngmt">Správa uživatelů</a>{{end}} <br></li>
-            <li>{{if .Admin}}<a href="/failures">Závady</a>{{end}} <br></li>
-            <li>{{if .Admin}}<a href="/technical-records">Technické záznamy</a>{{end}} <br></li>
-            <li><a href="/lines">Linky</a><br></li>
-            <li>{{if .Admin}}<a href="/spoje">Spoje</a>{{end}} <br></li>
-            <li>{{if .Admin or .Driver}}<a href="/plan">Denný plán</a>{{end}} <br></li>
+            <li>{{if or .Admin .Manager}}<a href="/failures">Závady</a>{{end}} <br></li>
+            <li>{{if or .Admin .Technician}}<a href="/technical-records">Technické záznamy</a>{{end}} <br></li>
+            <li>{{if or .Admin .Manager}}<a href="/lines">Lines</a>{{end}} <br></li>
+            <li>{{if or .Admin .Dispatcher}}<a href="/spoje">Spoje</a>{{end}} <br></li>
+            <li>{{if or .Admin .Driver}}<a href="/plan">Denný plán</a>{{end}} <br></li>
             <li>{{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Odhlásit</a>{{end}}</li>
         </ul>
     </nav>

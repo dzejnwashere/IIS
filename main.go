@@ -64,6 +64,7 @@ func index(writer http.ResponseWriter, request *http.Request) {
 		LoggedIn:   auth.HasPermission(request, typedef.UnprotectedPerm),
 		Admin:      auth.HasPermission(request, typedef.AdminPerm),
 		Driver:     auth.HasPermission(request, typedef.RidicPerm),
+		Technician: auth.HasPermission(request, typedef.TechnikPerm),
 		Dispatcher: auth.HasPermission(request, typedef.DispecerPerm),
 		Manager:    auth.HasPermission(request, typedef.SpravcePerm),
 		Username:   username,

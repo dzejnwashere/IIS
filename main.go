@@ -511,6 +511,30 @@ func create_new_maintenance(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func verify_maintenence(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		spz := request.URL.Query().Get("SPZ")
+		date := request.URL.Query().Get("Date")
+
+		var maintenance db.Maintenance
+		maintenance.SPZ = spz
+		maintenance.Date = date
+
+		exists := db.MaintenanceExists(maintenance)
+
+		existsJSON, err := json.Marshal(exists)
+		if err != nil {
+			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(existsJSON)
+	} else {
+		http.Error(writer, "Bad request", http.StatusNetworkAuthenticationRequired)
+		return
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -553,6 +577,7 @@ func main() {
 	r.HandleFunc("/udrzba", udrzba)
 	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)
 	r.HandleFunc("/verify-station", verify_station)
+	r.HandleFunc("/verify-maintenence", verify_maintenence)
 	r.HandleFunc("/kategorie_dne/{den}", kategorie_dne)
 	r.HandleFunc("/jizdy", jizdy)
 	r.HandleFunc("/jizdy/ridici/{jizdaID}", jizdyRidici)

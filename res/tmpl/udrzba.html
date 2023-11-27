@@ -93,7 +93,7 @@
     <p>Naplánovat údržbu:</p>
     <div class="popup-row">
         <label for="spzInput">SPZ:</label>
-        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpzForTarget(this.value, spzInputStatus)" oninput="updateSuggestionsForTarget(this, spzSuggestions)">
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpz(this.value)" oninput="updateSuggestionsForTarget(this, 'spzSuggestions')">
         <datalist id="spzSuggestions">
         </datalist>
         <label for="spzInput" id="spzInputStatus">❌</label>
@@ -131,6 +131,28 @@
     var spzData
     var validData = false
 
+    function validateSpz(input) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    document.getElementById("spzInputStatus").innerHTML = "✅";
+                    validData = true;
+                    validateData();
+                } else if(response === false) {
+                    document.getElementById("spzInputStatus").innerHTML = "❌";
+                    validData = false;
+                    validateData();
+                }
+            },
+            error: function() {
+                console.log("ERROR")
+            }
+        });
+    }
+
     function openPopup() {
         document.getElementById('popup').style.display = 'block';
         document.getElementById('overlay').style.display = 'block';
@@ -156,6 +178,9 @@
     }
 
     function updateSuggestionsForTarget(input, target) {
+        target = document.getElementById(target);
+
+        console.log(target)
         var inputValue = input.value.toLowerCase();
         target.innerHTML = '';
 
@@ -176,6 +201,8 @@
     }
 
     function validateSpzForTarget(input, target) {
+        target = document.getElementById(target);
+
         $.ajax({
             method: "GET",
             url: "/spz-exists",
@@ -183,12 +210,12 @@
             success: function(response) {
                 if(response === true) {
                     target.innerHTML = "✅";
-                    validData = true
-                    validateData()
+                    validData = true;
+                    validateData();
                 } else if(response === false) {
                     target.innerHTML = "❌";
-                    validData = false
-                    validateData()
+                    validData = false;
+                    validateData();
                 }
             },
             error: function() {
@@ -251,23 +278,58 @@
     function editMaintenance(internalID) {
         document.getElementById("editButton" + internalID).textContent = "✅";
 
-        var spzEl = document.getElementById("spz" + internalID);
-        var dateEl = document.getElementById("date" + internalID);
+        var spz = document.getElementById("spz" + internalID);
+        var date = document.getElementById("date" + internalID);
 
-        var spz = spzEl.innerText;
-        var date = dateEl.innerText;
+        var spzValue = spz.innerText;
+        var dateValue = date.innerText;
 
-        console.log(spz);
-        console.log(date);
+        document.getElementById("editButton" + internalID).onclick = function() {
+            changeEditMaintanance(internalID);
+        }
 
-        var sugTarget = "newSpzSuggestion" + internalID;
-        var verTarget = "newSpzInputStatus" + internalID;
+        sugTarget = "newSpzSuggestion" + internalID;
+        verTarget = "newSpzInputStatus" + internalID;
 
-        spzEl.innerHTML = '<input id="editSpz' + internalID + '" type="text" value="' + spz + '" list="' + sugTarget + '" oninput="updateSuggestionsForTarget(this, ' + sugTarget + ')" onblur="validateSpzForTarget(this.value, ' + verTarget + ')">' +
-            '<datalist id="' + sugTarget + '"></datalist>'
-            + '<label for="editSpz' + internalID + '" id="' + verTarget + '">❌</label>';
+        console.log("Internal ID : " + internalID);
+        spz.innerHTML = `<input id="editSpz${internalID}" type="text" value="${spzValue}" list="newSpzSuggestion${internalID}" oninput="updateSuggestionsForTarget(this,'${sugTarget}')" onblur="validateSpzForTarget(this.value,'${verTarget}')"><datalist id="newSpzSuggestion${internalID}"></datalist><label for="editSpz${internalID}" id="newSpzInputStatus${internalID}">❌</label>`
+        date.innerHTML = '<input id="editDate' + internalID + '" type="date" value="' + dateValue + '">';
 
-        dateEl.innerHTML = '<input id="editDate' + internalID + '" type="date" value="' + date + '"/>';
+    }
+
+    function changeEditMaintanance(id) {
+        document.getElementById("editButton" + id).textContent = "✏️";
+
+        document.getElementById("editButton" + id).onclick = function() {
+            editMaintenance(id)
+        }
+
+        var spz = document.getElementById("spz" + id);
+        var date = document.getElementById("date" + id);
+
+        var newSpz = document.getElementById("editSpz" + id);
+        var newDate = document.getElementById("editDate" + id);
+
+        spz.innerHTML = newSpz.value
+        date.innerHTML = newDate.value
+    }
+
+    function verifyMaintenance(spz, date) {
+        $.ajax({
+            method: "GET",
+            url: "/verify-maintenence",
+            data: { SPZ: spz, Date : date },
+            success: function(response) {
+                if(response === true) {
+
+                } else if(response === false) {
+
+                }
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
     }
 
     fetchSPZData()

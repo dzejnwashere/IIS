@@ -45,9 +45,13 @@ func logout(writer http.ResponseWriter, request *http.Request) {
 }
 
 type IndexPageData struct {
-	LoggedIn bool
-	Admin    bool
-	Username string
+	LoggedIn   bool
+	Admin      bool
+	Driver     bool
+	Technician bool
+	Dispatcher bool
+	Manager    bool
+	Username   string
 }
 
 func index(writer http.ResponseWriter, request *http.Request) {
@@ -57,9 +61,12 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	}
 	username, _ := db.GetUsername(auth.GetUserId(request))
 	data := IndexPageData{
-		LoggedIn: auth.HasPermission(request, typedef.UnprotectedPerm),
-		Admin:    auth.HasPermission(request, typedef.AdminPerm),
-		Username: username,
+		LoggedIn:   auth.HasPermission(request, typedef.UnprotectedPerm),
+		Admin:      auth.HasPermission(request, typedef.AdminPerm),
+		Driver:     auth.HasPermission(request, typedef.RidicPerm),
+		Dispatcher: auth.HasPermission(request, typedef.DispecerPerm),
+		Manager:    auth.HasPermission(request, typedef.SpravcePerm),
+		Username:   username,
 	}
 	err = files.Execute(writer, data)
 	if err != nil {

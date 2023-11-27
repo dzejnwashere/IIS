@@ -64,11 +64,14 @@ Zde vložte grafické schéma relační databáze (tabulek v databázi).
 
 <h2>Instalace</h2>
 
-Stručně popište:
 <ul>
-  <li>postup instalace na server,</li>
-  <li>softwarové požadavky (verze PHP apod.),</li>
-  <li>jak rozbalit, konfigurovat, inicializovat databázi, ...</li>
+  <li>Program vyžaduje nainstalovaný toolchain go a databázi mysql</li>
+  <li>Inicializaci databáze si program zajistí interně sám při prvním spuštění, ukázková data do databáze vloží po přihlášení administrátorským účtem (admin/admin) a návštěvě adresy "/demo"</li>
+  <li>Program se spouští na lokálním portu 53714</li>
+  <li></li>
+  <li>na serveru: <code>export DBSTRING=&ltYour DB connection string here&gt</code>, e.g. <code>export DBSTRING=xplagiat0b:tajneheslo@unix(/var/run/mysql/mysql.sock)/iisdbname</code></li>
+  <li>V adresáři projektu: <code>go build</code></li>
+  <li>V adresáři projektu: <code>./IIS</code></li>
 </ul>
 
 <h2>Známé problémy</h2>

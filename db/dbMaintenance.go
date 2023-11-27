@@ -49,26 +49,35 @@ func GetAllMaintenance() []Maintenance {
 	return maintenanceArray
 }
 
-func CreateNewMaintenance(newMaintenance Maintenance) Maintenance {
-	query := `INSERT INTO udrzba (spz, datum) VALUES (?, ?);`
+func CreateNewMaintenance(newMaintenance Maintenance) (bool, Maintenance) {
+	if MaintenanceExists(newMaintenance) {
+		return false, Maintenance{SPZ: "", Date: ""}
+	} else {
+		query := `INSERT INTO udrzba (spz, datum) VALUES (?, ?);`
 
-	_, err := db.Exec(query, newMaintenance.SPZ, newMaintenance.Date)
-	if err != nil {
-		log.Fatal("CreateNewTechnicalRecord:LastInsertId: " + err.Error())
+		_, err := db.Exec(query, newMaintenance.SPZ, newMaintenance.Date)
+		if err != nil {
+			log.Fatal("CreateNewTechnicalRecord:LastInsertId: " + err.Error())
+		}
+
+		return false, newMaintenance
 	}
-
-	return newMaintenance
 }
 
-func ReplaceMaintenance(oldMaintenance Maintenance, newMaintenance Maintenance) {
-	query := `DELETE FROM udrzba WHERE spz = ? AND datum = ?;`
+func ReplaceMaintenance(oldMaintenance Maintenance, newMaintenance Maintenance) bool {
+	if MaintenanceExists(newMaintenance) {
+		return false
+	} else {
+		query := `DELETE FROM udrzba WHERE spz = ? AND datum = ?;`
 
-	_, err := db.Exec(query, newMaintenance.SPZ, newMaintenance.Date)
-	if err != nil {
-		log.Fatal("CreateNewTechnicalRecord:LastInsertId: " + err.Error())
+		_, err := db.Exec(query, newMaintenance.SPZ, newMaintenance.Date)
+		if err != nil {
+			log.Fatal("CreateNewTechnicalRecord:LastInsertId: " + err.Error())
+		}
+
+		_, _ = CreateNewMaintenance(newMaintenance)
+		return true
 	}
-
-	_ = CreateNewMaintenance(newMaintenance)
 }
 
 func MaintenanceExists(maintenance Maintenance) bool {

@@ -22,6 +22,7 @@ func getTableVersion(tableName string) int64 {
 		ver = 0
 	}
 	return ver
+	return ver
 }
 
 func GetStops() []string {
@@ -218,15 +219,20 @@ func InitDB() {
 
 	optionallyCreateTable("tech_zaznamy", 6, `
 	   			CREATE TABLE tech_zaznamy (
-	   				spz_vozidla varchar(7),
+	   				id INT AUTO_INCREMENT PRIMARY KEY,
+	   			    spz_vozidla varchar(7),
 	       			datum DATE,
-	   			    zavada INT,
 	   			    popis VARCHAR(255),
-	   			    autor INT NOT NULL ,
-	   			    PRIMARY KEY (spz_vozidla, datum),
+	   			    autor INT NOT NULL,
 	   			    FOREIGN KEY (autor) REFERENCES users(id),
-	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz),
-	   			    FOREIGN KEY (zavada) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
+	   			    FOREIGN KEY (spz_vozidla) REFERENCES vozy(spz)) comment="6" character set utf8mb4;`)
+
+	optionallyCreateTable("tech_zaznam_zavady", 6, `
+	   			CREATE TABLE tech_zaznam_zavady (
+	   				tech_record_id INT,
+	   			    zavada_id INT,
+	   			    FOREIGN KEY (tech_record_id) REFERENCES tech_zaznamy(id),
+	   			    FOREIGN KEY (zavada_id) REFERENCES zavady(id)) comment="6" character set utf8mb4;`)
 
 	optionallyCreateTable("dny_jizdy", 6, `
 	   			CREATE TABLE dny_jizdy (

@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type TechnicalRecord struct {
+	ID            int
 	SPZ           string
 	Date          string
-	Failure       Failure
+	Failures      []Failure
 	Details       string
 	AuthorID      int
 	AuthorName    string
@@ -19,7 +21,7 @@ type TechnicalRecord struct {
 type CreateTechnicalRecord struct {
 	SPZ                string
 	Date               string
-	FailureID          *int32
+	FailureID          []int
 	FailureDescription string
 	Details            string
 	AuthorID           int
@@ -28,7 +30,7 @@ type CreateTechnicalRecord struct {
 }
 
 func GetTechnicalRecords() []TechnicalRecord {
-	query := `SELECT tz.spz_vozidla, tz.datum, tz.zavada, tz.popis, t.id, t.name, t.surname FROM tech_zaznamy tz
+	query := `SELECT tz.id, tz.spz_vozidla, tz.datum, tz.popis, t.id, t.name, t.surname FROM tech_zaznamy tz
 			  JOIN users t ON tz.autor=t.id;`
 
 	rows, err := db.Query(query)
@@ -46,25 +48,17 @@ func GetTechnicalRecords() []TechnicalRecord {
 
 	var technicalRecords []TechnicalRecord
 	var technicalRecord TechnicalRecord
-	var zavadaIDNull *int
-	var zavadaID sql.NullInt64
-
 	for rows.Next() {
-		err := rows.Scan(&technicalRecord.SPZ, &technicalRecord.Date, &zavadaIDNull, &technicalRecord.Details, &technicalRecord.AuthorID, &technicalRecord.AuthorName, &technicalRecord.AuthorSurname)
+		var dateStr string
+
+		err := rows.Scan(&technicalRecord.ID, &technicalRecord.SPZ, &dateStr, &technicalRecord.Details, &technicalRecord.AuthorID, &technicalRecord.AuthorName, &technicalRecord.AuthorSurname)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if zavadaIDNull != nil {
-			zavadaID = sql.NullInt64{int64(*zavadaIDNull), true}
-		} else {
-			zavadaID = sql.NullInt64{Valid: false}
-		}
-
-		if zavadaID.Valid {
-			technicalRecord.Failure = GetFailureById(int(zavadaID.Int64))
-		}
-
+		split := strings.Split(dateStr, "T")
+		technicalRecord.Date = split[0]
+		technicalRecord.Failures = GetFailuresForTechRecord(technicalRecord.ID)
 		technicalRecords = append(technicalRecords, technicalRecord)
 	}
 	err = rows.Err()
@@ -76,18 +70,14 @@ func GetTechnicalRecords() []TechnicalRecord {
 
 func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) CreateTechnicalRecord {
 	fmt.Println(techRecord)
-	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, zavada, popis, autor) VALUES
-                                                                        (?, ?, ?, ?, ?);`
+	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, popis, autor) VALUES (?, ?, ?, ?); SELECT LAST_INSERT_ID();
+`
+	var newID int
+	err := db.QueryRow(query, techRecord.SPZ, techRecord.Date, techRecord.Details, techRecord.AuthorID).Scan(&newID)
 
-	var failureId sql.NullInt32
-
-	if techRecord.FailureID == nil {
-		failureId = sql.NullInt32{Valid: false}
-	} else {
-		failureId = sql.NullInt32{Int32: *techRecord.FailureID, Valid: true}
-	}
-
-	_, err := db.Exec(query, techRecord.SPZ, techRecord.Date, failureId, techRecord.Details, techRecord.AuthorID)
+	fmt.Println(newID)
+	// TODO
+	//AssignFailuresToTechRecord()
 
 	if err != nil {
 		log.Fatal("CreateNewTechnicalRecord: " + err.Error())

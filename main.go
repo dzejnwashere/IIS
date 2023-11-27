@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -168,6 +169,30 @@ func failures(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func failuresByState(writer http.ResponseWriter, request *http.Request) {
+	state := request.URL.Query().Get("state")
+	stateInt, err := strconv.Atoi(state)
+	if err != nil {
+		http.Error(writer, "Invalid state parameter", http.StatusBadRequest)
+		return
+	}
+	var failuresByState []db.Failure
+	if stateInt == 0 {
+		failuresByState = db.GetFailures()
+	} else {
+		failuresByState = db.GatFailuresByState(stateInt)
+	}
+
+	failuresByStateJSON, err := json.Marshal(failuresByState)
+	if err != nil {
+		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(failuresByStateJSON)
+}
+
 func technical_records(writer http.ResponseWriter, request *http.Request) {
 	technicalRecords := db.GetTechnicalRecords()
 
@@ -290,6 +315,45 @@ func create_new_tech_record(writer http.ResponseWriter, request *http.Request) {
 
 }
 
+type NewUser struct {
+	Username string
+	Password string
+	Name     string
+	Surname  string
+}
+
+func create_new_user(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPost {
+		decoder := json.NewDecoder(request.Body)
+
+		var user NewUser
+
+		err := decoder.Decode(&user)
+		if err != nil {
+			http.Error(writer, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		passHash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+
+		responseData, err := db.CreateOrUpdateUser(-1, user.Username, string(passHash), user.Name, user.Surname, 0)
+		if err != nil {
+			http.Error(writer, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		responseDataJSON, err := json.Marshal(responseData)
+		if err != nil {
+			http.Error(writer, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(responseDataJSON)
+	}
+
+}
+
 func create_new_failure(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
 		userID := auth.GetUserId(request)
@@ -380,11 +444,13 @@ func main() {
 	r.HandleFunc("/demo", demo)
 	r.HandleFunc("/login", login)
 	r.HandleFunc("/register", static_site("register", typedef.PublicPerm))
+	r.HandleFunc("/create-new-user", create_new_user)
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)
 	r.HandleFunc("/remove", remove)
 	r.HandleFunc("/update-perms", update_perms)
 	r.HandleFunc("/failures", failures)
+	r.HandleFunc("/failuresbystate", failuresByState)
 	r.HandleFunc("/doc", static_site("doc", typedef.PublicPerm))
 	r.HandleFunc("/technical-records", technical_records)
 	r.HandleFunc("/get-spzs", get_spzs)

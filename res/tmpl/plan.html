@@ -33,6 +33,13 @@
             z-index: 999;
         }
 
+        .create-btn {
+            font-size: 20px;
+            padding: 10px 20px;
+            background-color: #D22B2B;
+            cursor: pointer;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -53,14 +60,21 @@
 </head>
 <body>
 
-<table id="moje_jizdy">
-    <thead><tr><td>Linka</td><td>Výchozí zastávka</td><td>Odjezd</td><td>Cílová zastávka</td><td>Příjezd</td><td>Vůz</td></tr></thead>
-    <tbody>
-    {{range .Jizdy}}
-        <tr id="ride-{{.Id}}"><td>{{.LineName}}</td><td>{{.StartStop.Name}}</td><td>{{.StartTime}}</td><td>{{.EndStop.Name}}</td><td>{{.EndTime}}</td><td>{{.Vuz}}</td></tr>
-    {{end}}
-    </tbody>
-</table>
+    <table id="moje_jizdy">
+        <tr>
+            <th>Linka</th>
+            <th>Výchozí zastávka</th>
+            <th>Odjezd</th>
+            <th>Cílová zastávka</th>
+            <th>Příjezd</th>
+            <th>Vůz</th>
+        </tr>
+        <tbody>
+        {{range .Jizdy}}
+            <tr id="ride-{{.Id}}"><td>{{.LineName}}</td><td>{{.StartStop.Name}}</td><td>{{.StartTime}}</td><td>{{.EndStop.Name}}</td><td>{{.EndTime}}</td><td>{{.Vuz}}</td></tr>
+        {{end}}
+        </tbody>
+    </table>
 
     <table id="table-zavady">
         <tr>
@@ -68,7 +82,7 @@
         </tr>
 
         <tr>
-            <td><button onclick="openPopup()">⚠️</button></td>
+            <td><button class="create-btn" onclick="openPopup()">⚠️</button></td>
         </tr>
 
     </table>

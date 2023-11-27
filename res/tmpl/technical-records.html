@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <title>Technické záznamy</title>
     <style>
         .popup-container {
             display: none;
@@ -95,29 +97,29 @@
         <tr>
             <th>SPZ</th>
             <th>Dátum</th>
-            <th>Závada</th>
+            <th>Závady</th>
             <th>Detaily</th>
-            <th>AuthorName</th>
-            <th>AuthorSurname</th>
+            <th>Author</th>
             <th>Upravit</th>
         </tr>
     </thead>
     <tbody id="tech-records-tbody">
-        {{range .}}
-            <tr id="tech-record{{.SPZ}}{{.Date}}">
-                <td id="spz{{.SPZ}}{{.Date}}">{{.SPZ}}</td>
-                <td id="date{{.SPZ}}{{.Date}}">{{.Date}}</td>
-                {{if eq .Failure.FailureID 0}}
-                    <td id="failureID{{.SPZ}}{{.Date}}">None</td>
-                {{else}}
-                    <td id="failureID{{.SPZ}}{{.Date}}">{{.Failure.Description}}</td>
+    {{range .}}
+        <tr id="tech-record{{.ID}}">
+            <td id="spz{{.ID}}">{{.SPZ}}</td>
+            <td id="date{{.ID}}">{{.Date}}</td>
+            {{if not .Failures}}
+                <td id="failureID{{.ID}}">Ziadne</td>
+            {{else}}
+                {{range $index, $value := .Failures}}
+                    <td id="failureID{{$value.FailureID}}">{{$value.Description}}</td>
                 {{end}}
-                <td id="details{{.SPZ}}{{.Date}}">{{.Details}}</td>
-                <td id="author-name{{.SPZ}}{{.Date}}">{{.AuthorName}}</td>
-                <td id="author-surname{{.SPZ}}{{.Date}}">{{.AuthorSurname}}</td>
-                <td><button id="editButton{{.SPZ}}{{.Date}}" class="edit-btn" onclick="editTechRec({{.SPZ}}+{{.Date}})">✏️</button></td>
-            </tr>
-        {{end}}
+            {{end}}
+            <td id="details{{.ID}}">{{.Details}}</td>
+            <td id="author{{.ID}}">{{.AuthorName}} {{.AuthorSurname}}</td>
+            <td><button id="editButton{{.ID}}" class="edit-btn" onclick="editTechRec({{.ID}})">✏️</button></td>
+        </tr>
+    {{end}}
     </tbody>
 </table>
 <br>

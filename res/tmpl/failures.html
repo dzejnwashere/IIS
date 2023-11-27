@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <title>Závady</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .popup-container {
@@ -64,13 +66,15 @@
 
 <h2>Závady 🚎</h2><br>
 
-<select name="failures" id="failures">
-    <option value="vsechny">Všechny</option>
-    <option value="prideleno">Přideleno</option>
-    <option value="vreseni">V řešení</option>
-    <option value="pozastaveno">Pozastaveno</option>
-    <option value="vyreseno">Vyřešeno</option>
+<select name="failures" id="failures" onchange="updateTable()">
+    <option value="0">Všechny</option>
+    <option value="1">Neřideleno</option>
+    <option value="2">Přideleno</option>
+    <option value="3">V řešení</option>
+    <option value="4">Pozastaveno</option>
+    <option value="5">Vyřešeno</option>
 </select>
+
 
 <table id="table-zavady">
     <thead>
@@ -88,16 +92,67 @@
         {{range .}}
             <tr id="failure{{.FailureID}}">
                 <td id="spz{{.FailureID}}">{{.SPZ}}</td>
-                <td id="authorSurname{{.FailureID}}">{{.AuthorSurname}}</td>
-                <td id="technicianSurname{{.FailureID}}">{{.TechnicianSurname}}</td>
+                <td id="authorSurname{{.FailureID}}">{{.AuthorName}} {{.AuthorSurname}}</td>
+                <td id="technicianSurname{{.FailureID}}">{{.TechnicianName}} {{.TechnicianSurname}}</td>
                 <td id="description{{.FailureID}}">{{.Description}}</td>
                 <td id="state{{.FailureID}}">{{.State}}</td>
                 <td><button id="editButton{{.FailureID}}" class="edit-btn" onclick="editFail({{.FailureID}})">✏️</button></td>
             </tr>
         {{end}}
     </tbody>
-</table>
-<br>
+</table><br>
+
+<script>
+    function updateTable() {
+        var selected = document.getElementById("failures").value;
+        $.ajax({
+            method: "GET",
+            url: "/failuresbystate",
+            data: { state: selected },
+            success: function(response) {
+                console.log("Success:", response);
+                updateTableBody(response);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("Error getting failures:", textStatus, errorThrown);
+            }
+        });
+    }
+
+    function updateTableBody(data) {
+        var tableBody = document.getElementById("table-body");
+        tableBody.innerHTML = "";
+
+        data.forEach(function (item) {
+            ID = item["FailureID"];
+            var row = tableBody.insertRow();
+
+            var cellSpz = row.insertCell();
+            cellSpz.id = "spz" + ID;
+            cellSpz.textContent = item["SPZ"];
+
+            var cellAuthor = row.insertCell();
+            cellAuthor.id = "authorSurname" + ID;
+            cellAuthor.textContent = item["AuthorName"] + " " + item["AuthorSurname"];
+
+            var cellTechnician = row.insertCell();
+            cellTechnician.id = "technicianSurname" + ID;
+            cellTechnician.textContent = item["TechnicianName"] + " " + item["TechnicianSurname"];
+
+            var cellDescription = row.insertCell();
+            cellDescription.id = "description" + ID;
+            cellDescription.textContent = item["Description"];
+
+            var cellState = row.insertCell();
+            cellState.id = "state" + ID;
+            cellState.textContent = item["State"];
+
+            var cellEditButton = row.insertCell();
+            cellEditButton.innerHTML = '<button id="editButton'+ID+'" class="edit-btn" onclick="editFail('+ID+')">✏️</button>';
+        });
+    }
+
+</script>
 
 <button class="create-failure" onclick="openPopupFailures()">➕</button>
 

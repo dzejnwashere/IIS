@@ -54,6 +54,9 @@
 
 <h2>Implementace</h2>
 <p>Stručná dokumentace k implementaci, která popisuje, které části projektu (např. PHP skripty) implementují jednotlivé případy použití.</p>
+<p>AUtorizace pomocí JWT tokenu ukládajícího ID přihlášeného uživatele, vše ostatní řešeno na backendu. Hesla ukládaná pomocí bcrypt, většina funkcí na práci s přihlášeným uživatelem žije v kódu v /auth</p>
+<p>Veškerá interakce s databází je pomocí modulu /db v kódu, který zajištuje přímé vytahování a zpracování dat z DB</p>
+<p>Ostatní práce (s požadavky, prezentace uživatelům, API) je rozmístěna mezi main.go, lines.go a rides.go</p>
 
 <h3>Databáze</h3>
 

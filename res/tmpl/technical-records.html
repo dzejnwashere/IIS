@@ -99,7 +99,7 @@
             <th>Dátum</th>
             <th>Závady</th>
             <th>Detaily</th>
-            <th>Author</th>
+            <th>Autor</th>
             <th>Upravit</th>
         </tr>
     </thead>
@@ -192,6 +192,7 @@
     let userID = 0;
     let userName = "";
     let userSurname = "";
+
 
     function editTechRec(id) {
         document.getElementById("editButton" + id).textContent = "✅";
@@ -331,8 +332,8 @@
                     var requestData = {
                         SPZ: spz,
                         Date: date,
-                        FailureID : assignedFailures[0],
-                        FailureDescription : assignedFailuresDetails[0],
+                        FailureID : assignedFailures,
+                        FailureDescription : assignedFailuresDetails,
                         Details : details,
                         AuthorID : userID,
                         AuthorName : userName,
@@ -446,12 +447,12 @@
             success: function(response) {
                 if(response === null) {
                     tableBody.innerText = "No failures for selected vehicle."
+
                     resizePopupToContent(1)
                 } else {
                     resizePopupToContent(response.length)
                     failures = response.length
-                    failuresIDs = []
-                    fails = []
+
                     var index = 0
                     response.forEach(function (item) {
                         failuresIDs.push(item["FailureID"])

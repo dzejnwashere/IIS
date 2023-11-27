@@ -22,7 +22,7 @@ type CreateTechnicalRecord struct {
 	SPZ                string
 	Date               string
 	FailureID          []int
-	FailureDescription string
+	FailureDescription []string
 	Details            string
 	AuthorID           int
 	AuthorName         string
@@ -70,14 +70,21 @@ func GetTechnicalRecords() []TechnicalRecord {
 
 func CreateNewTechnicalRecord(techRecord CreateTechnicalRecord) CreateTechnicalRecord {
 	fmt.Println(techRecord)
-	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, popis, autor) VALUES (?, ?, ?, ?); SELECT LAST_INSERT_ID();
-`
-	var newID int
-	err := db.QueryRow(query, techRecord.SPZ, techRecord.Date, techRecord.Details, techRecord.AuthorID).Scan(&newID)
+	query := `INSERT INTO tech_zaznamy (spz_vozidla, datum, popis, autor) VALUES (?, ?, ?, ?);`
 
-	fmt.Println(newID)
-	// TODO
-	//AssignFailuresToTechRecord()
+	var newID int64
+	res, err := db.Exec(query, techRecord.SPZ, techRecord.Date, techRecord.Details, techRecord.AuthorID)
+	newID, err = res.LastInsertId()
+	if err != nil {
+		log.Fatal("CreateNewTechnicalRecord:LastInsertId: " + err.Error())
+	}
+
+	if len(techRecord.FailureID) > 0 {
+		for _, value := range techRecord.FailureID {
+			UpdateFailureState(value, 5)
+		}
+		AssignFailuresToTechRecord(newID, techRecord.FailureID)
+	}
 
 	if err != nil {
 		log.Fatal("CreateNewTechnicalRecord: " + err.Error())

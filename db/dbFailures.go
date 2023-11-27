@@ -228,7 +228,7 @@ func GetFailuresForTechRecord(techRecordID int) []Failure {
 	return failures
 }
 
-func AssignFailuresToTechRecord(techRecordID int, failureIDs []int) {
+func AssignFailuresToTechRecord(techRecordID int64, failureIDs []int) {
 	for _, value := range failureIDs {
 		query := `INSERT INTO tech_zaznam_zavady (tech_record_id, zavada_id) VALUES
                                                                         (?, ?);`

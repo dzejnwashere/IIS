@@ -47,7 +47,7 @@
 
 <div class="login-container">
     <h2>Registrace</h2>
-    <form method="post" action="/register" onsubmit="return registerUser()">
+    <form method="post" action="/create-new-user" onsubmit="return registerUser()">
         <div class="form-group">
             <label for="username">Prihlasovací jméno: <span class="required">*</span></label>
             <input type="text" id="username" name="username" required><br>
@@ -97,6 +97,11 @@
         }
     }
 
+    function checkUsername() {
+        var username = document.getElementById("username").value;
+
+    }
+
     function registerUser() {
         if (validateForm()) {
 
@@ -117,20 +122,31 @@
                     Surname: surname,
                 };
 
-                $.ajax({
-                    type: "POST",
-                    url: "/create-new-user",
-                    contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify(requestUser),
-                    success: function(response) {
-                        console.log(response)
+                fetch('/create-new-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     },
-                    error: function () {
-                        console.log("ERROR createUser")
-                    }
-                });
+                    body: JSON.stringify(requestUser),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        alert('Registrace proběhla úspešně!');
+                        window.location.href = '/login';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error during registration');
+                    });
             });
         }
+        return false;
     }
 </script>
 

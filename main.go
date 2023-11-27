@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -324,6 +325,7 @@ type NewUser struct {
 
 func create_new_user(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
+
 		decoder := json.NewDecoder(request.Body)
 
 		var user NewUser
@@ -336,20 +338,22 @@ func create_new_user(writer http.ResponseWriter, request *http.Request) {
 
 		passHash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 
-		responseData, err := db.CreateOrUpdateUser(-1, user.Username, string(passHash), user.Name, user.Surname, 0)
+		_, err = db.CreateOrUpdateUser(-1, user.Username, string(passHash), user.Name, user.Surname)
 		if err != nil {
 			http.Error(writer, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-
-		responseDataJSON, err := json.Marshal(responseData)
-		if err != nil {
-			http.Error(writer, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
+		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
-		writer.Write(responseDataJSON)
+		resp := make(map[string]string)
+		resp["message"] = "Status OK"
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+		}
+		writer.Write(jsonResp)
+	} else {
+		fmt.Println("ELSE")
 	}
 
 }
@@ -435,6 +439,18 @@ func verify_station(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func register_page(writer http.ResponseWriter, request *http.Request) {
+	files, err := template.ParseFiles("res/tmpl/register.html")
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, nil)
+	if err != nil {
+		return
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -443,7 +459,7 @@ func main() {
 	r.HandleFunc("/admin", static_site("admin", typedef.AdminPerm))
 	r.HandleFunc("/demo", demo)
 	r.HandleFunc("/login", login)
-	r.HandleFunc("/register", static_site("register", typedef.PublicPerm))
+	r.HandleFunc("/register", register_page)
 	r.HandleFunc("/create-new-user", create_new_user)
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)

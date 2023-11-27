@@ -166,7 +166,7 @@ func GetLinesFromStop(stopName string) []LineFromStop {
 			  join spoje s ON s.linka = l.id
 			  join zastavky sz ON s.smer_jizdy = sz.id
 			  join dny_jizdy dj ON s.dny_jizdy= dj.id
-			  WHERE z.nazov_zastavky = ?;`
+			  WHERE z.nazov_zastavky = ? and z.nazov_zastavky <> sz.nazov_zastavky;`
 
 	rows, err := db.Query(query, stopName)
 

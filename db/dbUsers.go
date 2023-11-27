@@ -119,3 +119,14 @@ func GetUser(userID int64) UserData {
 
 	return userData
 }
+
+func UsernameExists(username string) bool {
+	query := "SELECT COUNT(*) FROM users WHERE username = ?"
+	var count int
+	err := db.QueryRow(query, username).Scan(&count)
+	if err != nil {
+		return false
+	}
+
+	return count > 0
+}

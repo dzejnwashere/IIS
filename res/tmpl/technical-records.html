@@ -111,9 +111,15 @@
             {{if not .Failures}}
                 <td id="failureID{{.ID}}">Žádné</td>
             {{else}}
+                {{$concatStrings := ""}}
                 {{range $index, $value := .Failures}}
-                    <td id="failureID{{$value.FailureID}}">{{$value.Description}}</td>
+                    {{if eq $concatStrings ""}}
+                        {{$concatStrings = printf "%s" $value.Description}}
+                    {{else}}
+                        {{$concatStrings = printf "%s, %s" $concatStrings $value.Description}}
+                    {{end}}
                 {{end}}
+                <td id="failureID{{.ID}}">{{$concatStrings}}</td>
             {{end}}
             <td id="details{{.ID}}">{{.Details}}</td>
             <td id="author{{.ID}}">{{.AuthorName}} {{.AuthorSurname}}</td>

@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -325,11 +324,8 @@ type NewUser struct {
 
 func create_new_user(writer http.ResponseWriter, request *http.Request) {
 	if request.Method == http.MethodPost {
-
 		decoder := json.NewDecoder(request.Body)
-
 		var user NewUser
-
 		err := decoder.Decode(&user)
 		if err != nil {
 			http.Error(writer, "Invalid request body", http.StatusBadRequest)
@@ -340,22 +336,23 @@ func create_new_user(writer http.ResponseWriter, request *http.Request) {
 
 		_, err = db.CreateOrUpdateUser(-1, user.Username, string(passHash), user.Name, user.Surname)
 		if err != nil {
-			http.Error(writer, "Invalid request body", http.StatusBadRequest)
+			http.Error(writer, "Error creating user", http.StatusInternalServerError)
 			return
 		}
+
 		writer.WriteHeader(http.StatusOK)
 		writer.Header().Set("Content-Type", "application/json")
 		resp := make(map[string]string)
 		resp["message"] = "Status OK"
 		jsonResp, err := json.Marshal(resp)
 		if err != nil {
-			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+			http.Error(writer, "Error responding with JSON", http.StatusInternalServerError)
+			return
 		}
 		writer.Write(jsonResp)
 	} else {
 		fmt.Println("ELSE")
 	}
-
 }
 
 func create_new_failure(writer http.ResponseWriter, request *http.Request) {
@@ -451,6 +448,24 @@ func register_page(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func usernameExists(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodGet {
+		userName := request.URL.Query().Get("Username")
+		exists := db.UsernameExists(userName)
+
+		existsJSON, err := json.Marshal(exists)
+		if err != nil {
+			http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.Write(existsJSON)
+	} else {
+		http.Error(writer, "Bad request", http.StatusNetworkAuthenticationRequired)
+		return
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -460,6 +475,7 @@ func main() {
 	r.HandleFunc("/demo", demo)
 	r.HandleFunc("/login", login)
 	r.HandleFunc("/register", register_page)
+	r.HandleFunc("/username-exists", usernameExists)
 	r.HandleFunc("/create-new-user", create_new_user)
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)

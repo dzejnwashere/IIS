@@ -43,7 +43,7 @@
         <td><button type="button" onclick="deleteLine({{.Id}})">Delete</button></td>
     </tr>{{end}}
 </table><br>
-<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename"><button>Create new line</button></form><br>
+<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename" onkeypress="return isNumberKey(event)" ><button>Create new line</button></form><br>
 <table id="zastavky">
     <thead>
     <tr>
@@ -59,11 +59,22 @@
 </datalist>
 <form name="add-stop" id="add-stop" hidden>
     <input type="text" id="line_stop_id" hidden>
-    <label for="stop-to-add">Stop name: </label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names">
-    <label for="time-to-add">Route time: </label><input type="text" id="time-to-add" name="time-to-add">
+    <label for="stop-to-add">Stop name: </label><input type="text" id="stop-to-add" name="stop-to-add" list="stop-names" onchange="checkStopVal()">
+    <label for="time-to-add">Route time: </label><input type="text" id="time-to-add" name="time-to-add" onkeypress="return isNumberKey(event)" >
     <button type="button" onclick="addStop()" id="add-stop-btn">Create</button>
 </form>
 <script>
+    function isNumberKey(evt) {
+    var charCode = (evt.which) ? evt.which : evt.keyCode
+    if (charCode > 31 && (charCode < 48 || charCode > 57))
+        return false;
+    return true;
+}
+    function checkStopVal() {
+        if($("#stop-names option[value='"+$("#stop-to-add").val()+"']").length == 0) {
+            $("#stop-to-add").val("")
+        }
+    }
     function fillLineStopsTable(response) {
         var ar = response.split("\n")
         $("#zastavky").html("<thead><tr><th>Stop</th><th>Route time</th><th>Delete</th></tr></thead><tbody></tbody>")

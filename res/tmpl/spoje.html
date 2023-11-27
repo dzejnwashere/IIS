@@ -66,11 +66,16 @@
 </datalist>
 <form name="add-spoj" id="add-spoj" hidden>
     <input type="text" id="spoj_id" hidden>
-    <label for="day-to-add">Day of connection: </label><input type="text" id="day-to-add" name="day-to-add" list="dny_jizdy">
+    <label for="day-to-add">Day of connection: </label><input type="text" id="day-to-add" name="day-to-add" list="dny_jizdy" onchange="checkStopVal()">
     <label for="time-to-add">Departure time: </label><input type="text" id="time-to-add" name="time-to-add">
     <button type="button" onclick="addSpoj()" id="add-spoj-btn">Create</button>
 </form>
 <script>
+    function checkStopVal() {
+        if($("#dny_jizdy option[value='"+$("#day-to-add").val()+"']").length == 0) {
+            $("#day-to-add").val("")
+        }
+    }
     function GetDayNameFromId(id) {
         return $("#dny_jizdy option[data-id=" + id + "]").attr("value")
     }

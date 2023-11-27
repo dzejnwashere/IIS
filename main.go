@@ -176,14 +176,14 @@ func failuresByState(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer, "Invalid state parameter", http.StatusBadRequest)
 		return
 	}
-	var failuresByState []db.Failure
+	var failures []db.Failure
 	if stateInt == 0 {
-		failuresByState = db.GetFailures()
+		failures = db.GetFailures()
 	} else {
-		failuresByState = db.GatFailuresByState(stateInt)
+		failures = db.GatFailuresByState(stateInt)
 	}
 
-	failuresByStateJSON, err := json.Marshal(failuresByState)
+	failuresByStateJSON, err := json.Marshal(failures)
 	if err != nil {
 		http.Error(writer, "Internal Server Error", http.StatusInternalServerError)
 		return

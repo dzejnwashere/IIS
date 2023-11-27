@@ -99,31 +99,37 @@
 
     function registerUser() {
         if (validateForm()) {
+
             var username = document.getElementById("username").value;
             var password = document.getElementById("password").value;
             var name = document.getElementById("name").value;
             var surname = document.getElementById("surname").value;
+            console.log(username)
+            console.log(password)
+            console.log(name)
+            console.log(surname)
 
-            var requestUser = {
-                Username: username,
-                Password: password,
-                Name: name,
-                Surname: surname,
-            };
+            $(document).ready(function() {
+                var requestUser = {
+                    Username: username,
+                    Password: password,
+                    Name: name,
+                    Surname: surname,
+                };
 
-            $.ajax({
-                type: "POST",
-                url: "/create-new-user",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(requestUser),
-                success: function(response) {
-                    console.log(response)
-                },
-                error: function () {
-                    console.log("ERROR createUser")
-                }
+                $.ajax({
+                    type: "POST",
+                    url: "/create-new-user",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(requestUser),
+                    success: function(response) {
+                        console.log(response)
+                    },
+                    error: function () {
+                        console.log("ERROR createUser")
+                    }
+                });
             });
-
         }
     }
 </script>

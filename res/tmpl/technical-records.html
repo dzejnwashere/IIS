@@ -109,7 +109,7 @@
             <td id="spz{{.ID}}">{{.SPZ}}</td>
             <td id="date{{.ID}}">{{.Date}}</td>
             {{if not .Failures}}
-                <td id="failureID{{.ID}}">Ziadne</td>
+                <td id="failureID{{.ID}}">Žádné</td>
             {{else}}
                 {{range $index, $value := .Failures}}
                     <td id="failureID{{$value.FailureID}}">{{$value.Description}}</td>

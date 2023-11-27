@@ -47,14 +47,21 @@
     <th>Dny</th>
     </thead>
     <tbody>
-    {{range .}}
-        <tr id="Line{{.LineName}}">
-            <td id="LineName{{.LineName}}">{{.LineName}}</td>
-            <td id="Direction{{.LineName}}">{{.NextStop}}</td>
-            <td id="Time{{.LineName}}">{{.Time}}</td>
-            <td id="Day{{.LineName}}">{{.Day}}</td>
+    {{if not .}}
+        <tr>
+            <td colspan="4">🚫 Zastávka mimo provoz.</td>
         </tr>
+    {{else}}
+        {{range .}}
+            <tr id="Line{{.LineName}}">
+                <td id="LineName{{.LineName}}">{{.LineName}}</td>
+                <td id="Direction{{.LineName}}">{{.NextStop}}</td>
+                <td id="Time{{.LineName}}">{{.Time}}</td>
+                <td id="Day{{.LineName}}">{{.Day}}</td>
+            </tr>
+        {{end}}
     {{end}}
+
     </tbody>
 
 </table>

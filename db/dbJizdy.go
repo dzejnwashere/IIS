@@ -111,55 +111,55 @@ type DriverForRide struct {
 	NextRide  int
 }
 
-/*func GetDriversForRide(ride int) []DriverForRide {
-	var jizdaTemp DriverForRide
+func GetDriversForRide(ride int) []DriverForRide {
+	//var jizdaTemp DriverForRide
 	var ret []DriverForRide
 
-	rows, err := db.Query("SELECT u.id, u.name, u.surname from users u join (select j.id as firstride from jizda where j.ridic=u.id and )")
+	rows, err := db.Query("SELECT u.id, u.name, u.surname from users u join (select j.id as firstride from jizda j join jizda j2 on j2.den = j.den join spoje s1 on s1.id = j.spoj join spojes s2 on s2.id = j2.id where j.ridic=u.id and j2.id = ? and s2.cas_odjezdu > s1.casodjezdu order by s1.cas_odjezdu desc limit 1)")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer rows.Close()
+	defer rows.Close() /*
 
-	for rows.Next() {
-		err := rows.Scan(&jizdaTemp.Id, &jizdaTemp.Vuz, &jizdaTemp.Spoj, &jizdaTemp.Driver)
+		for rows.Next() {
+			err := rows.Scan(&jizdaTemp.Id, &jizdaTemp.Vuz, &jizdaTemp.Spoj, &jizdaTemp.Driver)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		spoj := GetSpoj(jizdaTemp.Spoj)
-		jizdaTemp.StartTime = spoj.CasOdjezdu
-		stops := GetLineStops(spoj.Linka)
-		line := GetLine(spoj.Linka)
-		jizdaTemp.LineName = line.Name
-		atoi, err := strconv.Atoi(stops[len(stops)-1].Time)
-		jizdaTemp.EndTime = CalculateStopTime(spoj.CasOdjezdu, atoi)
-		if spoj.PrimarniSmer {
-			jizdaTemp.StartStop = Stop_t{
-				Id:   stops[0].Stop_id,
-				Name: stops[0].Stop_name,
+			spoj := GetSpoj(jizdaTemp.Spoj)
+			jizdaTemp.StartTime = spoj.CasOdjezdu
+			stops := GetLineStops(spoj.Linka)
+			line := GetLine(spoj.Linka)
+			jizdaTemp.LineName = line.Name
+			atoi, err := strconv.Atoi(stops[len(stops)-1].Time)
+			jizdaTemp.EndTime = CalculateStopTime(spoj.CasOdjezdu, atoi)
+			if spoj.PrimarniSmer {
+				jizdaTemp.StartStop = Stop_t{
+					Id:   stops[0].Stop_id,
+					Name: stops[0].Stop_name,
+				}
+				jizdaTemp.EndStop = Stop_t{
+					Id:   stops[len(stops)-1].Stop_id,
+					Name: stops[len(stops)-1].Stop_name,
+				}
+			} else {
+				jizdaTemp.EndStop = Stop_t{
+					Id:   stops[0].Stop_id,
+					Name: stops[0].Stop_name,
+				}
+				jizdaTemp.StartStop = Stop_t{
+					Id:   stops[len(stops)-1].Stop_id,
+					Name: stops[len(stops)-1].Stop_name,
+				}
 			}
-			jizdaTemp.EndStop = Stop_t{
-				Id:   stops[len(stops)-1].Stop_id,
-				Name: stops[len(stops)-1].Stop_name,
-			}
-		} else {
-			jizdaTemp.EndStop = Stop_t{
-				Id:   stops[0].Stop_id,
-				Name: stops[0].Stop_name,
-			}
-			jizdaTemp.StartStop = Stop_t{
-				Id:   stops[len(stops)-1].Stop_id,
-				Name: stops[len(stops)-1].Stop_name,
-			}
-		}
-		ret = append(ret, jizdaTemp)
-	}
+			ret = append(ret, jizdaTemp)
+		}*/
 	return ret
 
-}*/
+}
 
 func GetDayRides(day string) []Jizda_t {
 	var jizdaTemp Jizda_t

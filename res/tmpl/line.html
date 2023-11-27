@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line management</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #D22B2B;
+            color: white;
+        }
+
+        tr.selected {
+            background-color: #f2d2d2
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h2>Line {{.Num}}</h2><br>
+<table id="line">
+    <thead>
+    <tr>
+        <th>Stop</th>
+        <th>Minutes on route</th>
+    </tr>
+    </thead>
+    {{range .Stops}}
+    <tr id="stop{{.Stop_id}}">
+        <td>{{.Stop_name}}</td>
+        <td>{{.Time}}</td>
+    </tr>{{end}}
+</table><br>
+</body>
+</html>

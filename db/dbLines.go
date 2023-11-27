@@ -148,6 +148,7 @@ func GetStops2() []Stop_t {
 }
 
 type LineFromStop struct {
+	LineId   int
 	LineName int
 	Time     string
 	NextStop string
@@ -159,7 +160,7 @@ func GetLinesFromStop(stopName string) []LineFromStop {
 	var startTime string
 	var stopTime int
 
-	query := `SELECT l.nazev, lz.cas, s.cas_odjezdu, sz.nazov_zastavky, dj.den_jizdy  from linky l
+	query := `SELECT l.id, l.nazev, lz.cas, s.cas_odjezdu, sz.nazov_zastavky, dj.den_jizdy  from linky l
 			  join linka_zastavka lz ON lz.linka = l.id
 			  join zastavky z ON z.id = lz.zastavka
 			  join spoje s ON s.linka = l.id
@@ -179,7 +180,7 @@ func GetLinesFromStop(stopName string) []LineFromStop {
 	var lineFS LineFromStop
 
 	for rows.Next() {
-		err := rows.Scan(&lineFS.LineName, &stopTime, &startTime, &lineFS.NextStop, &lineFS.Day)
+		err := rows.Scan(&lineFS.LineId, &lineFS.LineName, &stopTime, &startTime, &lineFS.NextStop, &lineFS.Day)
 		if err != nil {
 			log.Fatal(err)
 		}

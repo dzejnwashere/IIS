@@ -78,6 +78,37 @@ func lines(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+type LineDetailStruct struct {
+	Num   string
+	Stops []db.Stop_line_t
+}
+
+func line_detail(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == "GET" {
+		s, ok := mux.Vars(request)["lineno"]
+		if !ok {
+			http.Error(writer, "Missing line number", 400)
+		}
+		atoi, err2 := strconv.Atoi(s)
+		if err2 != nil {
+			http.Error(writer, "Invalid line number (expected number, got "+s, 400)
+		}
+
+		files, err := template.ParseFiles("res/tmpl/line.html")
+		if err != nil {
+			fmt.Fprintf(writer, err.Error())
+		}
+
+		err = files.Execute(writer, LineDetailStruct{
+			Num:   s,
+			Stops: db.GetLineStops(atoi),
+		})
+		if err != nil {
+			return
+		}
+	}
+}
+
 func line_stops(writer http.ResponseWriter, request *http.Request) {
 	if !auth.HasPermission(request, typedef.SpravcePerm) {
 		writer.WriteHeader(403)

@@ -490,6 +490,7 @@ func main() {
 	r.HandleFunc("/lines/{lineno}", lines)
 	r.HandleFunc("/line_stops", line_stops)
 	r.HandleFunc("/line_stops/{lsno}", line_stops)
+	r.HandleFunc("/line/{lineno}", line_detail)
 	r.HandleFunc("/spoje", spoje)
 	r.HandleFunc("/spoje/{spojno}", spoje)
 	r.HandleFunc("/get-stops", get_stops)

@@ -64,6 +64,15 @@ func GetMyRides(driver int) []Jizda_t {
 				Id:   stops[len(stops)-1].Stop_id,
 				Name: stops[len(stops)-1].Stop_name,
 			}
+		} else {
+			jizdaTemp.EndStop = Stop_t{
+				Id:   stops[0].Stop_id,
+				Name: stops[0].Stop_name,
+			}
+			jizdaTemp.StartStop = Stop_t{
+				Id:   stops[len(stops)-1].Stop_id,
+				Name: stops[len(stops)-1].Stop_name,
+			}
 		}
 		ret = append(ret, jizdaTemp)
 	}

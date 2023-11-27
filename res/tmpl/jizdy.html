@@ -2,9 +2,167 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Line management</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even){background-color: #f2f2f2}
+
+        th {
+            background-color: #D22B2B;
+            color: white;
+        }
+
+        tr.selected {
+            background-color: #f2d2d2
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
+{{$A := .}}
+<h2>Line management 🚎</h2><br>
+<label for="selectedDate">Select date:</label> <input type="date" id="selectedDate"><select>
+<table id="linky">
+    <thead>
+    <tr>
+        <th>Line</th>
+        {{if $A.Manage}}
+        <th>Delete</th>
+        {{end}}
+    </tr>
+    </thead>
+    {{range .Linky}}
+    <tr id="line{{.Id}}">
+        <td>{{.Name}}</td>
+        {{if $A.Manage}}
+        <td><button type="button" onclick="deleteLine({{.Id}})">Delete</button></td>
+        {{end}}
+    </tr>{{end}}
+</table><br>
+{{if $A.Manage}}
+<form method="post" action="/lines"><label for="linename">New line number: </label> <input type="text" name="linename" id="linename"><button>Create new line</button></form><br>{{end}}
+<table id="spoje">
+    <thead>
+    <tr>
+        <th>Departure time</th>
+        <th>Day</th>
+        {{if $A.Manage}}
+        <th>Delete</th>{{end}}
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<datalist id="dny_jizdy">
+    {{range .DnyJizdy}}
+    <option data-id="{{.Id}}" value="{{.Popis}}"></option>{{end}}
+</datalist>
+<form name="add-spoj" id="add-spoj" hidden>
+    <input type="text" id="spoj_id" hidden>
+    <label for="day-to-add">Day of connection: </label><input type="text" id="day-to-add" name="day-to-add" list="dny_jizdy">
+    <label for="time-to-add">Departure time: </label><input type="text" id="time-to-add" name="time-to-add">
+    <button type="button" onclick="addSpoj()" id="add-spoj-btn">Create</button>
+</form>
+<script>
+    function GetDayNameFromId(id) {
+        return $("#dny_jizdy option[data-id=" + id + "]").attr("value")
+    }
 
+    function fillSpojeTable(response) {
+        var ar = response.split("\n")
+        $("#spoje tbody").empty()
+        for (var i = 0; i < ar.length - 1; i++) {
+            var a = ar[i].split(";")
+            $("#spoje tbody").append("<tr id='spoj-" + a[0] + "' {{if $A.Manage}}onclick='$(\"#spoj_id\").val(\"" + a[0] + "\");$(\"#day-to-add\").val(\"" + GetDayNameFromId(a[3]) + "\");$(\"#time-to-add\").val(\"" + a[1] + "\");$(\"#add-spoj-btn\").html(\"Update\")'{{end}}>" +
+                "<td>" + a[1] + "</td><td>"+GetDayNameFromId(a[3])+"</td>{{if $A.Manage}}<td><button type='button' onclickdeleteSpoj(" + a[0] + ")'>Delete</button></td>{{end}}</tr>")
+        }
+        {{if $A.Manage}}
+        $("#spoje tbody").append("<tr onclick='$(\"#line_stop_id\").val(\"\");$(\"#stop-to-add\").val(\"\");$(\"#time-to-add\").val(\"\");$(\"#add-stop-btn\").html(\"Create\")'><td>New record...</td><td></td></tr>")
+        $("#add-spoj").show()
+        $("#add-spoj input").val("")
+        {{end}}
+    }
+
+    $('#add-spoj').submit(function (evt) {
+        evt.preventDefault();
+        window.history.back();
+    });
+
+    $("#linky tbody tr").click(function(){
+        $(this).addClass('selected').siblings().removeClass('selected');
+        currentlySelectedLine=$(this).attr("id").substring(4)
+        $.ajax({
+            url: "/spoje/" + currentlySelectedLine,
+            type: "GET",
+            success: fillSpojeTable,
+            error: function() {
+                alert("An error occurred while fetching the line connections.");
+            }
+        })
+    });
+    {{if $A.Manage}}
+    function addSpoj() {
+        let time = $("#time-to-add").val();
+        let dayId = $("#dny_jizdy option[value='" + $("#day-to-add").val() + "']").attr("data-id");
+        let spoj__id = $("#spoj_id").val();
+        if (spoj__id == "") spoj__id = undefined
+        let isprimary = true
+        $.ajax({
+            url: "/spoje",
+            data: {
+                time: time,
+                day_id: dayId,
+                spoj_id: spoj__id,
+                line_id: currentlySelectedLine,
+                isprimary: isprimary
+            },
+            type: "POST",
+            success: fillSpojeTable,
+            error: function() {
+                alert("An error occurred while adding the line stops.");
+            }
+        })
+        $("#add-spoj input").val("")
+    }
+
+    function deleteSpoj(id) {
+        $.ajax({
+            url: "/spoje/" + id,
+            type: "DELETE",
+            success: function () {
+                $("#spoj-" + id).remove()
+            },
+            error: function() {
+                alert("An error occurred while deleting the line stops.");
+            }
+        })
+    }
+
+    function deleteLine(id) {
+        url = "/lines/" + id
+        $.ajax({
+            url: url,
+            type: "DELETE",
+            success: function () {
+                $("#line" + id).remove()
+                $("#zastavky tbody tr").remove()
+                $("#add-stop").hide()
+            },
+            error: function() {
+                alert("An error occurred while deleting the line stops.");
+            }
+        })
+    }
+
+    {{end}}
+</script>
 </body>
 </html>

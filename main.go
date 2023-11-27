@@ -153,18 +153,6 @@ func demo(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprint(writer, "Succesfully inserted demo data")
 }
 
-func doc(writer http.ResponseWriter, request *http.Request) {
-	files, err := template.ParseFiles("res/tmpl/doc.html")
-	if err != nil {
-		fmt.Fprintf(writer, err.Error())
-	}
-
-	err = files.Execute(writer, nil)
-	if err != nil {
-		return
-	}
-}
-
 func failures(writer http.ResponseWriter, request *http.Request) {
 	failures := db.GetFailures()
 
@@ -330,30 +318,6 @@ func create_new_failure(writer http.ResponseWriter, request *http.Request) {
 
 }
 
-func sms(writer http.ResponseWriter, request *http.Request) {
-	files, err := template.ParseFiles("res/tmpl/sms.html")
-	if err != nil {
-		fmt.Fprintf(writer, err.Error())
-	}
-
-	err = files.Execute(writer, nil)
-	if err != nil {
-		return
-	}
-}
-
-func onetime(writer http.ResponseWriter, request *http.Request) {
-	files, err := template.ParseFiles("res/tmpl/one-time.html")
-	if err != nil {
-		fmt.Fprintf(writer, err.Error())
-	}
-
-	err = files.Execute(writer, nil)
-	if err != nil {
-		return
-	}
-}
-
 func get_states(writer http.ResponseWriter, request *http.Request) {
 	states := db.GetStates()
 
@@ -419,7 +383,7 @@ func main() {
 	r.HandleFunc("/remove", remove)
 	r.HandleFunc("/update-perms", update_perms)
 	r.HandleFunc("/failures", failures)
-	r.HandleFunc("/doc", doc)
+	r.HandleFunc("/doc", static_site("doc", typedef.PublicPerm))
 	r.HandleFunc("/technical-records", technical_records)
 	r.HandleFunc("/get-spzs", get_spzs)
 	r.HandleFunc("/lines", lines)
@@ -435,8 +399,8 @@ func main() {
 	r.HandleFunc("/get-actual-user", get_actual_user)
 	r.HandleFunc("/create-new-tech-record", create_new_tech_record)
 	r.HandleFunc("/create-new-failure", create_new_failure)
-	r.HandleFunc("/sms", sms)
-	r.HandleFunc("/one-time", onetime)
+	r.HandleFunc("/sms", static_site("sms", typedef.PublicPerm))
+	r.HandleFunc("/one-time", static_site("one-time", typedef.PublicPerm))
 	r.HandleFunc("/get-states", get_states)
 	r.HandleFunc("/plan", plan)
 	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)

@@ -35,6 +35,16 @@ func GetAllLines() []Line_t {
 	}
 	return lines
 }
+func GetLine(id int) Line_t {
+	var lines Line_t
+	rows := db.QueryRow("SELECT id, nazev from linky where id = ?", id)
+	err := rows.Scan(&lines.Id, &lines.Name)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return lines
+}
 
 func DeleteLine(id int) error {
 	_, err := db.Exec("DELETE FROM linky where id=?", id)

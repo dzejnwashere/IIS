@@ -54,10 +54,10 @@
 <body>
 
 <table id="moje_jizdy">
-    <thead><tr><td>Spoj</td><td>Výchozí zastávka</td><td>Odjezd</td><td>Cílová zastávka</td><td>Příjezd</td><td>Vůz</td></tr></thead>
+    <thead><tr><td>Linka</td><td>Výchozí zastávka</td><td>Odjezd</td><td>Cílová zastávka</td><td>Příjezd</td><td>Vůz</td></tr></thead>
     <tbody>
     {{range .Jizdy}}
-
+        <tr id="ride-{{.Id}}"><td>{{.LineName}}</td><td>{{.StartStop.Name}}</td><td>{{.StartTime}}</td><td>{{.EndStop.Name}}</td><td>{{.EndTime}}</td><td>{{.Vuz}}</td></tr>
     {{end}}
     </tbody>
 </table>

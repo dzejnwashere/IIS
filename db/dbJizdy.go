@@ -16,6 +16,7 @@ type Jizda_t struct {
 	EndStop   Stop_t
 	StartTime string
 	EndTime   string
+	LineName  string
 }
 
 func CalculateStopTime(Departure string, duration int) string {
@@ -50,6 +51,8 @@ func GetMyRides(driver int) []Jizda_t {
 		spoj := GetSpoj(jizdaTemp.Spoj)
 		jizdaTemp.StartTime = spoj.CasOdjezdu
 		stops := GetLineStops(spoj.Linka)
+		line := GetLine(spoj.Linka)
+		jizdaTemp.LineName = line.Name
 		atoi, err := strconv.Atoi(stops[len(stops)-1].Time)
 		jizdaTemp.EndTime = CalculateStopTime(spoj.CasOdjezdu, atoi)
 		if spoj.PrimarniSmer {

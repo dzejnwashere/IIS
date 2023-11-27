@@ -379,6 +379,7 @@ func main() {
 	r.HandleFunc("/admin", static_site("admin", typedef.AdminPerm))
 	r.HandleFunc("/demo", demo)
 	r.HandleFunc("/login", login)
+	r.HandleFunc("/register", static_site("register", typedef.PublicPerm))
 	r.HandleFunc("/logout", logout)
 	r.HandleFunc("/usrmngmt", user_management)
 	r.HandleFunc("/remove", remove)

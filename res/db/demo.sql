@@ -164,4 +164,12 @@ INSERT INTO spoje (linka, smer_jizdy, cas_odjezdu, dny_jizdy) VALUES
                                                                        (4, 5, '11:00', 5),
                                                                        (5, 14, '12:00', 4);
 
+INSERT INTO jizda (spz, spoj, ridic) VALUES
+                                       ('MA018DE', 1, 1),
+                                       ('MA807PQ', 2, 1),
+                                       ('MA103QQ', 3, 4),
+                                       ('MA382DB', 4, 1),
+                                       ('MA369BA', 5, 1);
+
+
 COMMIT;

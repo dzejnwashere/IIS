@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrace</title>
+    <style>
+        .login-container {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-container h2 {
+            text-align: center;
+            color: #D22B2B;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            background-color: #D22B2B;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .required, .error-message{
+            color: #D22B2B;
+        }
+
+        a {
+            color: #D22B2B;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Registrace</h2>
+    <form method="post" action="/register" onsubmit="return validateForm()">
+        <div class="form-group">
+            <label for="username">Prihlasovací jméno: <span class="required">*</span></label>
+            <input type="text" id="username" name="username" required><br>
+        </div>
+        <div class="form-group">
+            <br><label for="password">Heslo: <span class="required">*</span></label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Potvrzení hesla: <span class="required">*</span></label>
+            <input type="password" id="password2" name="password2" required>
+            <div id="passwordError" class="error-message"></div>
+        </div>
+        <div class="form-group">
+            <br><label for="password">Jméno: <span class="required">*</span></label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Příjmení: <span class="required">*</span></label>
+            <input type="text" id="surname" name="surname" required><br>
+        </div>
+        <div>
+            <br><span class="required">*</span>Všechny položky jsou povinné.
+        </div>
+        <div class="form-group">
+            <br><input type="submit" value="Registrovat">
+        </div>
+        <div>
+            <br>Máte už svůj účet?<br>
+            <a href="login">Prihlaste se!</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function validateForm() {
+        var password = document.getElementById("password").value;
+        var password2 = document.getElementById("password2").value;
+        var passwordError = document.getElementById("passwordError");
+
+        if (password !== password2) {
+            passwordError.innerHTML = "Hesla se neshodují.";
+            return false;
+        } else {
+            passwordError.innerHTML = "";
+            return true;
+        }
+    }
+</script>
+
+</body>
+</html>

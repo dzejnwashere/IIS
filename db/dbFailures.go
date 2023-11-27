@@ -136,3 +136,15 @@ func CreateNewFailure(failure CreateFailure) []Failure {
 
 	return failures
 }
+
+func UpdateFailureState(failureID int, newState int) {
+	query := `UPDATE zavady
+			  SET stav = ?
+			  WHERE id = ?`
+
+	_, err := db.Exec(query, newState, failureID)
+
+	if err != nil {
+		log.Fatal("CreateNewFailure: " + err.Error())
+	}
+}

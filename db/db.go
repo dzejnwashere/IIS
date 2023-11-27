@@ -233,7 +233,11 @@ func InitDB() {
 	   			    id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    den_jizdy VARCHAR(50) NOT NULL
 	   			    ) comment="6" character set utf8mb4;`)
-
+	optionallyCreateTable("dny_kategorie", 6, `
+				CREATE TABLE dny_kategorie (
+				    den varchar(11) PRIMARY KEY,
+				    den_jizdy int not null
+				    ) character set utf8mb4;`)
 	optionallyCreateTable("spoje", 11, `
 	   			CREATE TABLE spoje (
 	   			    id INT AUTO_INCREMENT PRIMARY KEY,
@@ -244,13 +248,14 @@ func InitDB() {
 	       			FOREIGN KEY (linka) REFERENCES linky(id) on delete cascade ,
 	       			FOREIGN KEY (dny_jizdy) REFERENCES dny_jizdy(id)) comment="6" character set utf8mb4;`)
 
-	optionallyCreateTable("jizda", 2, `
+	optionallyCreateTable("jizda", 4, `
 	   			CREATE TABLE jizda (
 	   			    id INT AUTO_INCREMENT PRIMARY KEY,
 	   			    spz varchar(7),
 	   				spoj int,
 	   				ridic int,
+	   				den varchar(11),
 	       			FOREIGN KEY (spoj) REFERENCES spoje(id) on delete cascade ,
-	       			FOREIGN KEY (ridic) references users(id) on delete cascade ,
+	       			FOREIGN KEY (ridic) references users(id) on delete set null ,
 	       			FOREIGN KEY (spz) REFERENCES vozy(spz) on delete cascade) character set utf8mb4;`)
 }

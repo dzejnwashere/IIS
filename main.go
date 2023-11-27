@@ -407,6 +407,10 @@ func main() {
 	r.HandleFunc("/plan", plan)
 	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)
 	r.HandleFunc("/verify-station", verify_station)
+	r.HandleFunc("/kategorie_dne/{den}", kategorie_dne)
+	r.HandleFunc("/jizdy", jizdy)
+	r.HandleFunc("/jizdy/ridici/{jizdaID}", jizdyRidici)
+	r.HandleFunc("/jizdy/{den}", jizdyAPI)
 
 	db.InitDB()
 

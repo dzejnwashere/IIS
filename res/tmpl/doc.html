@@ -46,30 +46,29 @@
   <tr><td>dispecer</td><td>dispecer</td><td>Dispečer</td></tr>
 </table>
 
-<p>(Diagram případů užití není nutné vkládat, pokud IS implementuje role a případy užití definované zadáním.)</p>
-
 <h3>Video</h3>
 
 <a href="https://youtu.be/jbM43ZiTMV8">https://youtu.be/jbM43ZiTMV8</a>
 
 <h2>Implementace</h2>
 <p>Stručná dokumentace k implementaci, která popisuje, které části projektu (např. PHP skripty) implementují jednotlivé případy použití.</p>
-<p>Autorizace pomocí JWT tokenu ukládajícího ID přihlášeného uživatele, vše ostatní řešeno na backendu. Hesla ukládaná pomocí bcrypt, většina funkcí na práci s přihlášeným uživatelem žije v kódu v /auth</p>
-<p>Veškerá interakce s databází je pomocí modulu /db v kódu, který zajištuje přímé vytahování a zpracování dat z DB</p>
-<p>Ostatní práce (s požadavky, prezentace uživatelům, API) je rozmístěna mezi main.go, lines.go a rides.go</p>
+<p>Autorizace pomocí JWT tokenu ukládajícího ID přihlášeného uživatele, vše ostatní řešeno na backendu. Hesla ukládaná pomocí bcrypt, většina funkcí na práci s přihlášeným uživatelem žije v kódu v /auth.</p>
+<p>Veškerá interakce s databází je pomocí modulu /db v kódu, který zajištuje přímé vytahování a zpracování dat z DB.</p>
+<p>Ostatní práce (s požadavky, prezentace uživatelům, API) je rozmístěna mezi main.go, lines.go a rides.go.</p>
 
 <h3>Databáze</h3>
 
-Zde vložte grafické schéma relační databáze (tabulek v databázi).
+<img src="https://cdn.discordapp.com/attachments/1150122647972216916/1178830235001692221/image.png?ex=65779235&is=65651d35&hm=ebe4e5cb3cd7d056e3d1e17b1d00c9b7f88dda3820c3be68aae501f73567228d&
+" alt="Databáze">
 
 <h2>Instalace</h2>
 
 <ul>
-  <li>Program vyžaduje nainstalovaný toolchain go a databázi mysql</li>
-  <li>Inicializaci databáze si program zajistí interně sám při prvním spuštění, ukázková data do databáze vloží po přihlášení administrátorským účtem (admin/admin) a návštěvě adresy "/demo"</li>
+  <li>Program vyžaduje nainstalovaný toolchain go a databázi mysql.</li>
+  <li>Inicializaci databáze si program zajistí interně sám při prvním spuštění, ukázková data do databáze vloží po přihlášení administrátorským účtem (admin/admin) a návštěvě adresy "/demo".</li>
   <li>Program se spouští na lokálním portu 53714</li>
-  <li></li>
-  <li>na serveru: <code>export DBSTRING=&ltYour DB connection string here&gt</code>, e.g. <code>export DBSTRING=xplagiat0b:tajneheslo@unix(/var/run/mysql/mysql.sock)/iisdbname</code></li>
+  <br>
+  <li>Na serveru: <code>export DBSTRING=&ltYour DB connection string here&gt</code>, e.g. <code>export DBSTRING=xplagiat0b:tajneheslo@unix(/var/run/mysql/mysql.sock)/iisdbname.</code></li>
   <li>V adresáři projektu: <code>go build</code></li>
   <li>V adresáři projektu: <code>./IIS</code></li>
 </ul>

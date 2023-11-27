@@ -466,6 +466,51 @@ func usernameExists(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func udrzba(writer http.ResponseWriter, request *http.Request) {
+	maintenanceData := db.GetAllMaintenance()
+
+	files, err := template.ParseFiles("res/tmpl/udrzba.html")
+
+	if err != nil {
+		fmt.Fprintf(writer, err.Error())
+	}
+
+	err = files.Execute(writer, maintenanceData)
+	if err != nil {
+		return
+	}
+}
+
+func create_new_maintenance(writer http.ResponseWriter, request *http.Request) {
+	if request.Method == http.MethodPost {
+		userID := auth.GetUserId(request)
+		perms := db.GetPermissions(userID)
+
+		if ((perms & 16) > 0) || ((perms & 1) > 0) {
+			decoder := json.NewDecoder(request.Body)
+
+			var maintenance db.Maintenance
+
+			err := decoder.Decode(&maintenance)
+			if err != nil {
+				http.Error(writer, "Invalid request body", http.StatusBadRequest)
+				return
+			}
+
+			responseData := db.CreateNewMaintenance(maintenance)
+
+			responseDataJSON, err := json.Marshal(responseData)
+
+			writer.Header().Set("Content-Type", "application/json")
+			writer.Write(responseDataJSON)
+
+		} else {
+			http.Error(writer, "Bad permissions", http.StatusNetworkAuthenticationRequired)
+			return
+		}
+	}
+}
+
 func main() {
 
 	r := mux.NewRouter()
@@ -500,10 +545,12 @@ func main() {
 	r.HandleFunc("/get-actual-user", get_actual_user)
 	r.HandleFunc("/create-new-tech-record", create_new_tech_record)
 	r.HandleFunc("/create-new-failure", create_new_failure)
+	r.HandleFunc("/create-new-maintenance", create_new_maintenance)
 	r.HandleFunc("/sms", static_site("sms", typedef.PublicPerm))
 	r.HandleFunc("/one-time", static_site("one-time", typedef.PublicPerm))
 	r.HandleFunc("/get-states", get_states)
 	r.HandleFunc("/plan", plan)
+	r.HandleFunc("/udrzba", udrzba)
 	r.HandleFunc("/get-lines-from-stop", get_lines_from_stop)
 	r.HandleFunc("/verify-station", verify_station)
 	r.HandleFunc("/kategorie_dne/{den}", kategorie_dne)

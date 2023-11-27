@@ -264,4 +264,11 @@ func InitDB() {
 	       			FOREIGN KEY (spoj) REFERENCES spoje(id) on delete cascade ,
 	       			FOREIGN KEY (ridic) references users(id) on delete set null ,
 	       			FOREIGN KEY (spz) REFERENCES vozy(spz) on delete cascade) character set utf8mb4;`)
+
+	optionallyCreateTable("udrzba", 4, `
+	   			CREATE TABLE udrzba (
+	   			    spz varchar(7),
+	   				datum DATE,
+	       			FOREIGN KEY (spz) REFERENCES vozy(spz) on delete cascade,
+	       			PRIMARY KEY (spz, datum)) character set utf8mb4;`)
 }

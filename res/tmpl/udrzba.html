@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .popup-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 300px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .popup-row {
+            margin-bottom: 25px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .create-btn {
+            font-size: 20px;
+            padding: 10px 20px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td {
+            text-align: center;
+            padding: 8px;
+        }
+
+        th {
+            text-align: center;
+            padding: 8px;
+            background-color: #D22B2B;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<table id="moje_udrzby">
+    <thead>
+        <th>SPZ</th>
+        <th>Datum</th>
+        <th>Upravit</th>
+    </thead>
+    <tbody id="maintenance-table-body">
+        {{range .}}
+            <tr id="maintenance{{.SPZ}}{{.Date}}">
+                <td id="spz{{.SPZ}}{{.Date}}">{{.SPZ}}</td>
+                <td id="date{{.SPZ}}{{.Date}}">{{.Date}}</td>
+                {{$concat := printf "%s%s" .SPZ .Date}}
+                <td><button id="editButton{{.SPZ}}{{.Date}}" class="edit-btn" onclick="editMaintenance({{$concat}})">✏️</button></td>
+            </tr>
+        {{end}}
+    </tbody>
+</table>
+
+<table id="table-udrzby">
+    <tr>
+        <th>Naplánovat údržbu:</th>
+    </tr>
+
+    <tr>
+        <td><button class="create-btn" onclick="openPopup()">⚙️</button></td>
+    </tr>
+
+</table>
+
+<div id="popup" class="popup-container">
+    <p>Naplánovat údržbu:</p>
+    <div class="popup-row">
+        <label for="spzInput">SPZ:</label>
+        <input type="text" id="spzInput" list="spzSuggestions" placeholder="Zadaj SPZ vozidla" value="" onblur="validateSpzForTarget(this.value, spzInputStatus)" oninput="updateSuggestionsForTarget(this, spzSuggestions)">
+        <datalist id="spzSuggestions">
+        </datalist>
+        <label for="spzInput" id="spzInputStatus">❌</label>
+    </div>
+
+    <div class="popup-row">
+        <label for="dateInput">Datum:</label>
+        <input type="date" id="dateInput" onblur="validateDate(this.value)">
+        <label for="dateInput" id="dateInputStatus">✅</label>
+
+        <script>
+            function getTodayDate() {
+                const today = new Date();
+                const day = today.getDate().toString().padStart(2, '0');
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const year = today.getFullYear();
+                return `${year}-${month}-${day}`;
+            }
+
+            document.getElementById('dateInput').value = getTodayDate();
+
+            function validateDate(date) {
+                console.log('Validating date:', date);
+            }
+        </script>
+
+    </div>
+
+    <button onclick="closePopup()">Zrušit</button>
+    <button id="create-btn" disabled="disabled" onclick="create()">Naplánovat údržbu</button>
+</div>
+<div id="overlay" class="overlay"></div>
+
+<script>
+    var spzData
+    var validData = false
+
+    function openPopup() {
+        document.getElementById('popup').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+
+    function closePopup() {
+        clearInputs()
+        document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function fetchSPZData() {
+        console.log("fetchData")
+        fetch('/get-spzs')
+            .then(response => response.json())
+            .then(data => {
+                spzData = data
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error)
+            });
+        console.log("fetchDataDONE")
+    }
+
+    function updateSuggestionsForTarget(input, target) {
+        var inputValue = input.value.toLowerCase();
+        target.innerHTML = '';
+
+        var filteredSuggestions = spzData.filter(function (suggestion) {
+            return suggestion.toLowerCase().includes(inputValue);
+        });
+
+        filteredSuggestions.forEach(function (suggestion) {
+            var option = document.createElement('option');
+            option.value = suggestion;
+            target.appendChild(option);
+        });
+    }
+
+    function clearInputs() {
+        document.getElementById("spzInput").value = '';
+        document.getElementById("dateInput").value = '';
+    }
+
+    function validateSpzForTarget(input, target) {
+        $.ajax({
+            method: "GET",
+            url: "/spz-exists",
+            data: { SPZ: input },
+            success: function(response) {
+                if(response === true) {
+                    target.innerHTML = "✅";
+                    validData = true
+                    validateData()
+                } else if(response === false) {
+                    target.innerHTML = "❌";
+                    validData = false
+                    validateData()
+                }
+            },
+            error: function() {
+                console.log("ERROR");
+            }
+        });
+    }
+
+    function validateData() {
+        if (validData === true) {
+            document.getElementById("create-btn").disabled = false
+        } else {
+            document.getElementById("create-btn").disabled = true
+        }
+    }
+
+    function create() {
+        spz = document.getElementById("spzInput").value
+        date = document.getElementById("dateInput").value
+
+        $(document).ready(function () {
+            var requestData = {
+                SPZ: spz,
+                Date: date,
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/create-new-maintenance",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(requestData),
+                success: function (response) {
+                    console.log("Response from Go server:", response);
+                    updateTable(response)
+                },
+                error: function (error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+        closePopup()
+    }
+
+    function updateTable(data) {
+        var tableBody = document.getElementById("maintenance-table-body")
+        var row = tableBody.insertRow()
+
+        var cellSPZ = row.insertCell()
+        cellSPZ.textContent = data["SPZ"]
+        cellSPZ.id = "spz" + data["SPZ"] + data["Date"]
+
+        var cellDate = row.insertCell()
+        cellDate.textContent = data["Date"]
+        cellDate.id = "date" + data["SPZ"] + data["Date"]
+
+        var cellEdit = row.insertCell()
+        cellEdit.innerHTML = `<button id="editButton${data["SPZ"]}${data["Date"]}" class="edit-btn" onclick="editMaintenance(${data["SPZ"]}${data["Date"]})">✏️</button></td>`
+    }
+
+    function editMaintenance(internalID) {
+        document.getElementById("editButton" + internalID).textContent = "✅";
+
+        var spzEl = document.getElementById("spz" + internalID);
+        var dateEl = document.getElementById("date" + internalID);
+
+        var spz = spzEl.innerText;
+        var date = dateEl.innerText;
+
+        console.log(spz);
+        console.log(date);
+
+        var sugTarget = "newSpzSuggestion" + internalID;
+        var verTarget = "newSpzInputStatus" + internalID;
+
+        spzEl.innerHTML = '<input id="editSpz' + internalID + '" type="text" value="' + spz + '" list="' + sugTarget + '" oninput="updateSuggestionsForTarget(this, ' + sugTarget + ')" onblur="validateSpzForTarget(this.value, ' + verTarget + ')">' +
+            '<datalist id="' + sugTarget + '"></datalist>'
+            + '<label for="editSpz' + internalID + '" id="' + verTarget + '">❌</label>';
+
+        dateEl.innerHTML = '<input id="editDate' + internalID + '" type="date" value="' + date + '"/>';
+    }
+
+    fetchSPZData()
+</script>
+</body>
+</html>

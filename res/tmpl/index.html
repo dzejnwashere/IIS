@@ -94,8 +94,9 @@
             <li>{{if .Admin}}<a href="/usrmngmt">Správa uživatelů</a>{{end}} <br></li>
             <li>{{if or .Admin .Manager}}<a href="/failures">Závady</a>{{end}} <br></li>
             <li>{{if or .Admin .Technician}}<a href="/technical-records">Technické záznamy</a>{{end}} <br></li>
-            <li>{{if or .Admin .Manager}}<a href="/lines">Lines</a>{{end}} <br></li>
+            <li>{{if or .Admin .Manager}}<a href="/lines">Linky</a>{{end}} <br></li>
             <li>{{if or .Admin .Dispatcher}}<a href="/spoje">Spoje</a>{{end}} <br></li>
+            <li>{{if or .Admin .Dispatcher}}<a href="/udrzba">Údržba vozidel</a>{{end}} <br></li>
             <li>{{if or .Admin .Driver}}<a href="/plan">Denný plán</a>{{end}} <br></li>
             <li>{{if .LoggedIn}}Logged in as {{.Username}}. <a href="/logout">Odhlásit</a>{{end}}</li>
         </ul>

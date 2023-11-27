@@ -85,13 +85,6 @@
 <body>
 <h2>Technické záznamy 🚎</h2><br>
 
-<select name="failures" id="failures">
-    <option value="all">All</option>
-    <option value="tbd">To be done</option>
-    <option value="wip">Work in progress</option>
-    <option value="done">Done</option>
-</select>
-
 <table id="technical-records">
     <thead>
         <tr>
@@ -142,7 +135,7 @@
         <label for="spzInput" id="spzInputStatus">❌</label>
     </div>
     <div class="popup-row">
-        <label for="dateInput">Date:</label>
+        <label for="dateInput">Datum:</label>
         <input type="date" id="dateInput" onblur="validateDate(this.value)">
         <label for="dateInput" id="dateInputStatus">✅</label>
 
@@ -202,7 +195,6 @@
 
     function editTechRec(id) {
         document.getElementById("editButton" + id).textContent = "✅";
-        document.getElementById("editButton" + id).insertAdjacentHTML('afterend', '&nbsp;<button id="deleteButton' + id + '" class="delete-btn" onclick="deleteFail(' + id + ')">❌</button>');
 
         var spz = document.getElementById("spz" + id);
         var detail = document.getElementById("details" + id);
@@ -227,11 +219,6 @@
 
     function changeEditTechRec(id){
         document.getElementById("editButton" + id).textContent = "✏️";
-
-        var deleteButton = document.getElementById("deleteButton" + id);
-        if (deleteButton) {
-            deleteButton.remove();
-        }
 
         document.getElementById("editButton" + id).onclick = function() {
             editTechRec(id)
